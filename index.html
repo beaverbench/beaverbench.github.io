@@ -62,7 +62,7 @@
     <script src="static/js/bulma-slider.min.js"></script>
     <script src="static/js/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="static/js/benchmark.js"></script>
+    <script defer src="static/js/benchmark.js?v=20260306"></script>
 
     <!--imports for code highlighting and copy-->
     <link
@@ -174,40 +174,17 @@
         <div class="columns is-size-7">
           <div class="column is-full">
             <div class="left-boxes">
-              <h2 class="title is-4">BEAVER</h2>
-              <p>Beaver is an enterprise text-to-SQL dataset consisted of xxx queries and xxx tables across xxx databases. Queries and databases were collected from <i>private</i> organizations. Compared to previous text-to-SQL datasets focusing on public tables and
-              We also encourage the problem open-domain text-to-SQL</p>
-            </div>
-            <div class="left-boxes">
-              <h2 class="title is-4">Usage</h2>
-              <p>
-                We have created a unified MySQL version for our dataset. A free
-                MySQL installation can be found
-                <a href="https://dev.mysql.com/downloads/mysql/">here</a>. After
-                the installation, import the MySQL dump files from the google
-                drive to your local MySQL databases using
-              </p>
-              <pre><code>mysql -u root -p < `xxx.sql`</code></pre>
-              <p>
-                To execute a SQL statement, you can either log in to the MySQL
-                interface or you can do it via
-                <a href="https://pypi.org/project/mysql-connector-python/"
-                  >mysql-connector-python</a
-                >.
-              </p>
-              <br />
-              <p>
-                If you want to use the Oracle version of
-                <code>DW</code> queries, you can download the free oracle
-                database and import the CSVs.
-              </p>
-            </div>
-            <div class="left-boxes">
-              <h2 class="title is-4">Changelog</h2>
-              <div class="container" id="changelog-body"></div>
-            </div>
-            <div class="left-boxes">
-              <h2 class="title is-3 has-text-centered">Leaderboard</h2>
+              <div class="leaderboard-header">
+                <h2 class="title is-3 has-text-centered">Leaderboard</h2>
+                <div class="view-toggle">
+                  <button id="table-view-btn" class="button is-small is-dark" title="Table leaderboard">
+                    <span class="icon is-small"><i class="fas fa-table"></i></span>
+                  </button>
+                  <button id="scatter-view-btn" class="button is-small is-light" title="Scatter leaderboard">
+                    <span class="icon is-small"><i class="fas fa-chart-line"></i></span>
+                  </button>
+                </div>
+              </div>
               <div class="leaderboard-controls">
                 <div class="field">
                   <label class="label is-size-7">Method</label>
@@ -232,19 +209,28 @@
                   </div>
                 </div>
               </div>
-              <div class="table-container">
-                <table class="table is-hoverable is-fullwidth is-size-7">
-                  <thead>
-                    <tr>
+              <div id="leaderboard-table-view">
+                <div class="table-container">
+                  <table class="table is-hoverable is-fullwidth is-size-7">
+                    <thead>
+                      <tr>
+                      <th class="sortable" data-sort-key="rank">Rank</th>
+                      <th>Submission Date</th>
                       <th class="sortable" data-sort-key="method">Method</th>
                       <th class="sortable" data-sort-key="model">Model</th>
                       <th class="sortable" data-sort-key="score">Execution Accuracy</th>
-                    </tr>
-                  </thead>
-                  <tbody id="leaderboard-body">
-                    <!-- Leaderboard data will be inserted here -->
-                  </tbody>
-                </table>
+                      </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                      <!-- Leaderboard data will be inserted here -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div id="leaderboard-scatter-view" class="is-hidden">
+                <div class="chart-box">
+                  <canvas id="leaderboard-scatter-chart"></canvas>
+                </div>
               </div>
             </div>
             <div class="left-boxes">
@@ -282,6 +268,39 @@
               <div class="chart-box">
                 <canvas id="error-breakdown-chart"></canvas>
               </div>
+            </div>
+            <div class="left-boxes">
+              <h2 class="title is-4">BEAVER</h2>
+              <p>Beaver is an enterprise text-to-SQL dataset consisted of xxx queries and xxx tables across xxx databases. Queries and databases were collected from <i>private</i> organizations. Compared to previous text-to-SQL datasets focusing on public tables and
+              We also encourage the problem open-domain text-to-SQL</p>
+            </div>
+            <div class="left-boxes">
+              <h2 class="title is-4">Usage</h2>
+              <p>
+                We have created a unified MySQL version for our dataset. A free
+                MySQL installation can be found
+                <a href="https://dev.mysql.com/downloads/mysql/">here</a>. After
+                the installation, import the MySQL dump files from the google
+                drive to your local MySQL databases using
+              </p>
+              <pre><code>mysql -u root -p < `xxx.sql`</code></pre>
+              <p>
+                To execute a SQL statement, you can either log in to the MySQL
+                interface or you can do it via
+                <a href="https://pypi.org/project/mysql-connector-python/"
+                  >mysql-connector-python</a
+                >.
+              </p>
+              <br />
+              <p>
+                If you want to use the Oracle version of
+                <code>DW</code> queries, you can download the free oracle
+                database and import the CSVs.
+              </p>
+            </div>
+            <div class="left-boxes">
+              <h2 class="title is-4">Changelog</h2>
+              <div class="container" id="changelog-body"></div>
             </div>
             <div class="left-boxes">
               <h2 class="title is-4">Citation</h2>
@@ -361,9 +380,59 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       margin-bottom: 0;
     }
 
+    .leaderboard-header {
+      position: relative;
+      margin-bottom: 8px;
+    }
+
+    .view-toggle {
+      position: absolute;
+      right: 0;
+      top: 0;
+      display: flex;
+      gap: 6px;
+    }
+
     .sortable {
       cursor: pointer;
       user-select: none;
+    }
+
+    .rank-cell {
+      text-align: center;
+      min-width: 92px;
+    }
+
+    .rank-number {
+      font-size: inherit;
+      line-height: inherit;
+      font-weight: 700;
+      color: #2c323b;
+      margin-bottom: 0;
+    }
+
+    .date-pill {
+      display: inline-block;
+      background: #6f7783;
+      color: #f1f4f8;
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: inherit;
+      font-weight: 600;
+    }
+
+    .model-cell {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .model-logo {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      border-radius: 3px;
+      background: #fff;
     }
 
     .chart-box {
