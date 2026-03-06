@@ -1,0 +1,46 @@
+{
+  "sample_size": 275,
+  "top_level": [
+    {
+      "category": "Analytical and structural errors",
+      "percentage": 46.8
+    },
+    {
+      "category": "Schema linking errors",
+      "percentage": 35.2
+    },
+    {
+      "category": "Predicate errors",
+      "percentage": 18.0
+    }
+  ],
+  "breakdown": [
+    {
+      "category": "Analytical and structural errors",
+      "children": [
+        { "name": "Ordering", "percentage": 11.7 },
+        { "name": "Grouping", "percentage": 11.1 },
+        { "name": "Query decomposition (CTE and nesting)", "percentage": 7.7 },
+        { "name": "Window functions", "percentage": 6.1 },
+        { "name": "Scalar functions", "percentage": 5.0 },
+        { "name": "Aggregate functions", "percentage": 3.1 },
+        { "name": "Row selection", "percentage": 2.1 }
+      ]
+    },
+    {
+      "category": "Schema linking errors",
+      "children": [
+        { "name": "Column selection", "percentage": 12.5 },
+        { "name": "Table selection", "percentage": 11.8 },
+        { "name": "Join types and conditions", "percentage": 10.9 }
+      ]
+    },
+    {
+      "category": "Predicate errors",
+      "children": [
+        { "name": "Filter omission", "percentage": 10.6 },
+        { "name": "Incorrect literal values", "percentage": 7.4 }
+      ]
+    }
+  ]
+}
