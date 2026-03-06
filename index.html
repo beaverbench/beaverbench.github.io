@@ -173,9 +173,18 @@
       <div class="container is-max-desktop">
         <div class="columns is-size-7">
           <div class="column is-full">
-      
             <div class="left-boxes">
-              <h2 class="title is-3 has-text-centered">Leaderboard</h2>
+              <div class="leaderboard-header">
+                <h2 class="title is-3 has-text-centered">Leaderboard</h2>
+                <div class="view-toggle">
+                  <button id="table-view-btn" class="button is-small is-dark" title="Table leaderboard">
+                    <span class="icon is-small"><i class="fas fa-table"></i></span>
+                  </button>
+                  <button id="scatter-view-btn" class="button is-small is-light" title="Scatter leaderboard">
+                    <span class="icon is-small"><i class="fas fa-chart-line"></i></span>
+                  </button>
+                </div>
+              </div>
               <div class="leaderboard-controls">
                 <div class="field">
                   <label class="label is-size-7">Method</label>
@@ -260,42 +269,6 @@
                 <canvas id="error-breakdown-chart"></canvas>
               </div>
             </div>
-
-            <div class="left-boxes">
-              <h2 class="title is-4">BEAVER</h2>
-              <p>Beaver is an enterprise text-to-SQL dataset consisted of xxx queries and xxx tables across xxx databases. Queries and databases were collected from <i>private</i> organizations. Compared to previous text-to-SQL datasets focusing on public tables and
-              We also encourage the problem open-domain text-to-SQL</p>
-            </div>
-            <div class="left-boxes">
-              <h2 class="title is-4">Usage</h2>
-              <p>
-                We have created a unified MySQL version for our dataset. A free
-                MySQL installation can be found
-                <a href="https://dev.mysql.com/downloads/mysql/">here</a>. After
-                the installation, import the MySQL dump files from the google
-                drive to your local MySQL databases using
-              </p>
-              <pre><code>mysql -u root -p < `xxx.sql`</code></pre>
-              <p>
-                To execute a SQL statement, you can either log in to the MySQL
-                interface or you can do it via
-                <a href="https://pypi.org/project/mysql-connector-python/"
-                  >mysql-connector-python</a
-                >.
-              </p>
-              <br />
-              <p>
-                If you want to use the Oracle version of
-                <code>DW</code> queries, you can download the free oracle
-                database and import the CSVs.
-              </p>
-            </div>
-            <div class="left-boxes">
-              <h2 class="title is-4">Changelog</h2>
-              <div class="container" id="changelog-body"></div>
-            </div>
-
-
             <div class="left-boxes">
               <h2 class="title is-4">BEAVER</h2>
               <p>Beaver is an enterprise text-to-SQL dataset consisted of xxx queries and xxx tables across xxx databases. Queries and databases were collected from <i>private</i> organizations. Compared to previous text-to-SQL datasets focusing on public tables and
