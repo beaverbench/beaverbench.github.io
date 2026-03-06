@@ -2,7 +2,9 @@
   const state = {
     leaderboardRows: [],
     sort: { key: "score", direction: "desc" },
-    charts: {}
+    charts: {},
+    logoImages: {},
+    leaderboardView: "table"
   };
 
   const datasetMetricLabels = {
@@ -29,6 +31,47 @@
   };
 
   const colors = ["#3273dc", "#23d160", "#ff3860", "#ffdd57", "#00d1b2", "#7957d5", "#ff8c42", "#48c774"];
+  const LOGO_MARKER_SIZE = 20;
+
+  const leaderboardLogoOverlayPlugin = {
+    id: "leaderboardLogoOverlay",
+    afterDatasetsDraw: function (chart) {
+      if (!chart || chart.canvas.id !== "leaderboard-scatter-chart") return;
+      const dataset = chart.data.datasets[0];
+      if (!dataset || !dataset.data) return;
+
+      const meta = chart.getDatasetMeta(0);
+      const ctx = chart.ctx;
+      const half = LOGO_MARKER_SIZE / 2;
+
+      meta.data.forEach((point, index) => {
+        const row = dataset.data[index];
+        if (!row || !row.logo) return;
+
+        const img = getLogoImage(row.logo);
+        if (!img || !img.complete || !img.naturalWidth || !img.naturalHeight) return;
+
+        const x = point.x;
+        const y = point.y;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x, y, half, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(img, x - half, y - half, LOGO_MARKER_SIZE, LOGO_MARKER_SIZE);
+        ctx.restore();
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x, y, half, 0, Math.PI * 2);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "#ffffff";
+        ctx.stroke();
+        ctx.restore();
+      });
+    }
+  };
 
   function createOption(value, text) {
     const option = document.createElement("option");
@@ -73,14 +116,88 @@
     });
   }
 
+  function logoPathForModel(model) {
+    if (model.startsWith("Claude")) return "static/images/claude.webp";
+    if (model.startsWith("GPT")) return "static/images/openai.webp";
+    if (model.startsWith("Gemini")) return "static/images/gemini.webp";
+    if (model.startsWith("Qwen")) return "static/images/qwen.png";
+    if (model.startsWith("MiniMax")) return "static/images/minimax.jpeg";
+    if (model === "Overall") return "static/images/beaver.png";
+    return "static/images/beaver.png";
+  }
+
+  function getLogoImage(path) {
+    if (state.logoImages[path]) return state.logoImages[path];
+
+    const img = new Image();
+    img.src = path;
+    img.onload = function () {
+      if (state.charts.leaderboardScatter) state.charts.leaderboardScatter.update();
+    };
+
+    state.logoImages[path] = img;
+    return img;
+  }
+
+  function preloadAllLogos(rows) {
+    const paths = [...new Set(rows.map((row) => row.logo))];
+    const loads = paths.map((path) => new Promise((resolve) => {
+      const img = getLogoImage(path);
+      if (img.complete) {
+        resolve();
+        return;
+      }
+      img.onload = function () {
+        if (state.charts.leaderboardScatter) state.charts.leaderboardScatter.update();
+        resolve();
+      };
+      img.onerror = function () {
+        resolve();
+      };
+    }));
+
+    return Promise.all(loads);
+  }
+
+  function addLeaderboardRanks(rows) {
+    const sorted = [...rows].sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      const methodCmp = a.method.localeCompare(b.method);
+      if (methodCmp !== 0) return methodCmp;
+      return a.model.localeCompare(b.model);
+    });
+
+    const ranked = sorted.map((row, index) => ({
+      ...row,
+      rank: index + 1
+    }));
+
+    const rankMap = {};
+    ranked.forEach((row) => {
+      rankMap[`${row.method}__${row.model}`] = row.rank;
+    });
+
+    return rows.map((row) => ({
+      ...row,
+      rank: rankMap[`${row.method}__${row.model}`]
+    }));
+  }
+
   function toLeaderboardRows(leaderboardData) {
     const rows = [];
     leaderboardData.methods.forEach((methodRow) => {
       leaderboardData.models.forEach((model) => {
-        rows.push({ method: methodRow.method, model, score: methodRow.scores[model] });
+        rows.push({
+          method: methodRow.method,
+          model,
+          score: methodRow.scores[model],
+          submission_date: methodRow.submission_date || "Unknown",
+          logo: logoPathForModel(model)
+        });
       });
     });
-    return rows;
+
+    return addLeaderboardRanks(rows);
   }
 
   function setupLeaderboardFilters(rows) {
@@ -98,6 +215,94 @@
 
     methods.forEach((v) => methodSelect.appendChild(createOption(v, v)));
     models.forEach((v) => modelSelect.appendChild(createOption(v, v)));
+  }
+
+  function setLeaderboardView(view) {
+    state.leaderboardView = view;
+
+    const tableView = document.getElementById("leaderboard-table-view");
+    const scatterView = document.getElementById("leaderboard-scatter-view");
+    const tableBtn = document.getElementById("table-view-btn");
+    const scatterBtn = document.getElementById("scatter-view-btn");
+
+    if (view === "scatter") {
+      tableView.classList.add("is-hidden");
+      scatterView.classList.remove("is-hidden");
+      tableBtn.classList.remove("is-dark");
+      tableBtn.classList.add("is-light");
+      scatterBtn.classList.remove("is-light");
+      scatterBtn.classList.add("is-dark");
+    } else {
+      scatterView.classList.add("is-hidden");
+      tableView.classList.remove("is-hidden");
+      scatterBtn.classList.remove("is-dark");
+      scatterBtn.classList.add("is-light");
+      tableBtn.classList.remove("is-light");
+      tableBtn.classList.add("is-dark");
+    }
+  }
+
+  function renderLeaderboardScatter(rows) {
+    const points = rows.map((row) => ({
+      x: row.score,
+      y: row.rank,
+      method: row.method,
+      model: row.model,
+      submission_date: row.submission_date,
+      logo: row.logo
+    }));
+    const xValues = points.map((p) => p.x);
+    const yValues = points.map((p) => p.y);
+    const xMin = Math.min.apply(null, xValues);
+    const xMax = Math.max.apply(null, xValues);
+    const yMin = Math.min.apply(null, yValues);
+    const yMax = Math.max.apply(null, yValues);
+
+    if (state.charts.leaderboardScatter) state.charts.leaderboardScatter.destroy();
+    state.charts.leaderboardScatter = new Chart(document.getElementById("leaderboard-scatter-chart"), {
+      type: "scatter",
+      data: {
+        datasets: [{
+          label: "Leaderboard",
+          data: points,
+          pointStyle: "circle",
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointHitRadius: 14,
+          showLine: false
+        }]
+      },
+      plugins: [leaderboardLogoOverlayPlugin],
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                const raw = context.raw;
+                return `${raw.method} · ${raw.model} · Rank ${raw.y} · ${raw.submission_date} · ${raw.x.toFixed(1)}`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: "Execution Accuracy" },
+            min: xMin - 0.5,
+            max: xMax + 0.5
+          },
+          y: {
+            title: { display: true, text: "Rank" },
+            reverse: true,
+            min: yMin - 0.5,
+            max: yMax + 0.5,
+            ticks: { precision: 0 }
+          }
+        }
+      }
+    });
   }
 
   function renderLeaderboard() {
@@ -118,16 +323,18 @@
     const { key, direction } = state.sort;
     const order = direction === "asc" ? 1 : -1;
     filtered.sort((a, b) => {
-      if (key === "score") return (a.score - b.score) * order;
+      if (key === "score" || key === "rank") return (a[key] - b[key]) * order;
       return a[key].localeCompare(b[key]) * order;
     });
 
     tbody.innerHTML = "";
     filtered.forEach((row) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td>${row.method}</td><td>${row.model}</td><td>${row.score.toFixed(1)}</td>`;
+      tr.innerHTML = `<td class="rank-cell"><div class="rank-number">${row.rank}</div></td><td><span class="date-pill">${row.submission_date}</span></td><td>${row.method}</td><td><span class="model-cell"><img class="model-logo" src="${row.logo}" alt="${row.model} logo" onerror="this.src='static/images/beaver.png'" /><span>${row.model}</span></span></td><td>${row.score.toFixed(1)}</td>`;
       tbody.appendChild(tr);
     });
+
+    renderLeaderboardScatter(filtered);
   }
 
   function bindLeaderboardEvents() {
@@ -147,6 +354,13 @@
         }
         renderLeaderboard();
       });
+    });
+
+    document.getElementById("table-view-btn").addEventListener("click", function () {
+      setLeaderboardView("table");
+    });
+    document.getElementById("scatter-view-btn").addEventListener("click", function () {
+      setLeaderboardView("scatter");
     });
   }
 
@@ -283,23 +497,29 @@
     drawBreakdown();
   }
 
+  function fetchJSON(url) {
+    return fetch(url, { cache: "no-store" }).then((r) => r.json());
+  }
+
   async function init() {
     try {
       const [changelog, leaderboard, datasetStats, categoryPerformance, subtaskMetrics, errorTaxonomy] = await Promise.all([
-        fetch("static/jsons/changelog.json").then((r) => r.json()),
-        fetch("data/leaderboard.json").then((r) => r.json()),
-        fetch("data/dataset_stats.json").then((r) => r.json()),
-        fetch("data/category_performance.json").then((r) => r.json()),
-        fetch("data/subtask_metrics.json").then((r) => r.json()),
-        fetch("data/error_taxonomy.json").then((r) => r.json())
+        fetchJSON("static/jsons/changelog.json"),
+        fetchJSON("data/leaderboard.json"),
+        fetchJSON("data/dataset_stats.json"),
+        fetchJSON("data/category_performance.json"),
+        fetchJSON("data/subtask_metrics.json"),
+        fetchJSON("data/error_taxonomy.json")
       ]);
 
       fillChangelog(changelog);
 
       state.leaderboardRows = toLeaderboardRows(leaderboard);
+      await preloadAllLogos(state.leaderboardRows);
       setupLeaderboardFilters(state.leaderboardRows);
       bindLeaderboardEvents();
       renderLeaderboard();
+      setLeaderboardView("table");
 
       renderDatasetChart(datasetStats);
       renderCategoryChart(categoryPerformance);
