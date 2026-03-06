@@ -1,0 +1,36 @@
+{
+  "methods": [
+    {
+      "method": "ReFoRCE",
+      "complex_queries": 7.2,
+      "domain_specific_queries": 32.0,
+      "domain_specific_complex_queries": 5.4,
+      "synthetic_overall": 9.5,
+      "real_overall": 8.2
+    },
+    {
+      "method": "Few-shot",
+      "complex_queries": 5.0,
+      "domain_specific_queries": 30.8,
+      "domain_specific_complex_queries": 3.7,
+      "synthetic_overall": 7.6,
+      "real_overall": 5.8
+    },
+    {
+      "method": "DIN-SQL",
+      "complex_queries": 2.9,
+      "domain_specific_queries": 21.4,
+      "domain_specific_complex_queries": 2.8,
+      "synthetic_overall": 5.1,
+      "real_overall": 3.3
+    },
+    {
+      "method": "DAIL-SQL",
+      "complex_queries": 1.7,
+      "domain_specific_queries": 15.3,
+      "domain_specific_complex_queries": 2.1,
+      "synthetic_overall": 3.6,
+      "real_overall": 3.1
+    }
+  ]
+}

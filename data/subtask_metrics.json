@@ -1,0 +1,138 @@
+{
+  "settings": [
+    {
+      "setting": "Setting 0",
+      "description": "End-to-end (no subtask annotations)",
+      "methods": [
+        {
+          "method": "ReFoRCE",
+          "execution_accuracy": 9.5,
+          "table_retrieval_f1": 70.1,
+          "join_key_f1": 35.5,
+          "column_mapping_f1": 61.6,
+          "domain_knowledge_f1": 20.4,
+          "query_decomposition_score": 50.8
+        },
+        {
+          "method": "Few-shot",
+          "execution_accuracy": 7.6,
+          "table_retrieval_f1": 66.2,
+          "join_key_f1": 33.9,
+          "column_mapping_f1": 57.3,
+          "domain_knowledge_f1": 16.3,
+          "query_decomposition_score": 52.1
+        },
+        {
+          "method": "DIN-SQL",
+          "execution_accuracy": 5.1,
+          "table_retrieval_f1": 66.0,
+          "join_key_f1": 33.3,
+          "column_mapping_f1": 55.2,
+          "domain_knowledge_f1": 16.6,
+          "query_decomposition_score": 53.5
+        },
+        {
+          "method": "DAIL-SQL",
+          "execution_accuracy": 3.6,
+          "table_retrieval_f1": 59.3,
+          "join_key_f1": 31.2,
+          "column_mapping_f1": 51.2,
+          "domain_knowledge_f1": 16.7,
+          "query_decomposition_score": 49.9
+        }
+      ]
+    },
+    {
+      "setting": "Setting 1",
+      "description": "With schema-linking annotations (table retrieval, join keys, column mapping)",
+      "methods": [
+        {
+          "method": "ReFoRCE",
+          "execution_accuracy": 18.9,
+          "table_retrieval_f1": 91.3,
+          "join_key_f1": 71.9,
+          "column_mapping_f1": 82.1,
+          "domain_knowledge_f1": 23.9,
+          "query_decomposition_score": 58.3
+        },
+        {
+          "method": "Few-shot",
+          "execution_accuracy": 17.0,
+          "table_retrieval_f1": 89.8,
+          "join_key_f1": 77.5,
+          "column_mapping_f1": 81.4,
+          "domain_knowledge_f1": 23.7,
+          "query_decomposition_score": 62.8
+        },
+        {
+          "method": "DIN-SQL",
+          "execution_accuracy": 9.3,
+          "table_retrieval_f1": 87.9,
+          "join_key_f1": 75.0,
+          "column_mapping_f1": 78.4,
+          "domain_knowledge_f1": 19.8,
+          "query_decomposition_score": 56.4
+        },
+        {
+          "method": "DAIL-SQL",
+          "execution_accuracy": 8.0,
+          "table_retrieval_f1": 88.6,
+          "join_key_f1": 70.9,
+          "column_mapping_f1": 77.3,
+          "domain_knowledge_f1": 23.1,
+          "query_decomposition_score": 57.3
+        }
+      ]
+    },
+    {
+      "setting": "Setting 2",
+      "description": "With all subtask annotations",
+      "methods": [
+        {
+          "method": "ReFoRCE",
+          "execution_accuracy": 25.9,
+          "table_retrieval_f1": 91.9,
+          "join_key_f1": 75.7,
+          "column_mapping_f1": 83.4,
+          "domain_knowledge_f1": 27.1,
+          "query_decomposition_score": 64.8
+        },
+        {
+          "method": "Few-shot",
+          "execution_accuracy": 23.1,
+          "table_retrieval_f1": 90.5,
+          "join_key_f1": 80.3,
+          "column_mapping_f1": 82.4,
+          "domain_knowledge_f1": 26.1,
+          "query_decomposition_score": 66.6
+        },
+        {
+          "method": "DIN-SQL",
+          "execution_accuracy": 13.9,
+          "table_retrieval_f1": 89.4,
+          "join_key_f1": 77.9,
+          "column_mapping_f1": 80.4,
+          "domain_knowledge_f1": 26.1,
+          "query_decomposition_score": 62.3
+        },
+        {
+          "method": "DAIL-SQL",
+          "execution_accuracy": 11.2,
+          "table_retrieval_f1": 89.3,
+          "join_key_f1": 74.7,
+          "column_mapping_f1": 79.4,
+          "domain_knowledge_f1": 26.4,
+          "query_decomposition_score": 63.3
+        }
+      ]
+    }
+  ],
+  "metrics": [
+    "execution_accuracy",
+    "table_retrieval_f1",
+    "join_key_f1",
+    "column_mapping_f1",
+    "domain_knowledge_f1",
+    "query_decomposition_score"
+  ]
+}
