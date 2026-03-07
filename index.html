@@ -62,7 +62,7 @@
     <script src="static/js/bulma-slider.min.js"></script>
     <script src="static/js/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="static/js/benchmark.js?v=20260307"></script>
+    <script defer src="static/js/benchmark.js?v=20260308"></script>
 
     <!--imports for code highlighting and copy-->
     <link
@@ -249,9 +249,24 @@
               </div>
             </div>
             <div class="left-boxes">
-              <h2 class="title is-5">Subtask Metrics Across Settings</h2>
-              <div class="select is-small mb-2">
-                <select id="subtask-setting"></select>
+              <div class="subtask-header">
+                <h2 class="title is-5">Subtask Metrics Across Settings</h2>
+                <div class="subtask-view-toggle">
+                  <button id="subtask-view-setting-btn" class="button is-small is-dark" title="By setting">
+                    <span class="icon is-small"><i class="fas fa-layer-group"></i></span>
+                  </button>
+                  <button id="subtask-view-method-btn" class="button is-small is-light" title="By method">
+                    <span class="icon is-small"><i class="fas fa-user"></i></span>
+                  </button>
+                </div>
+              </div>
+              <div class="subtask-controls">
+                <div id="subtask-setting-control" class="select is-small">
+                  <select id="subtask-setting"></select>
+                </div>
+                <div id="subtask-method-control" class="select is-small is-hidden">
+                  <select id="subtask-method"></select>
+                </div>
               </div>
               <div class="chart-box">
                 <canvas id="subtask-chart"></canvas>
@@ -391,6 +406,26 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       top: 0;
       display: flex;
       gap: 6px;
+    }
+
+    .subtask-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .subtask-view-toggle {
+      display: flex;
+      gap: 6px;
+    }
+
+    .subtask-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
     }
 
     .sortable {
