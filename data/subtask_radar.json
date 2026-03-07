@@ -1,0 +1,45 @@
+{
+  "axes": [
+    { "key": "execution_accuracy", "label": "End-to-end Accuracy" },
+    { "key": "query_decomposition_score", "label": "Query Decomposition" },
+    { "key": "domain_knowledge_f1", "label": "Domain Knowledge" },
+    { "key": "column_mapping_f1", "label": "Column Mapping" },
+    { "key": "join_key_f1", "label": "Join Key" },
+    { "key": "table_retrieval_f1", "label": "Table Retrieval" }
+  ],
+  "settings": [
+    {
+      "id": "setting_0",
+      "label": "Setting 0",
+      "description": "End-to-end",
+      "methods": [
+        { "method": "ReFoRCE", "values": { "execution_accuracy": 9.5, "query_decomposition_score": 50.8, "domain_knowledge_f1": 20.4, "column_mapping_f1": 61.6, "join_key_f1": 35.5, "table_retrieval_f1": 70.1 } },
+        { "method": "Few-shot", "values": { "execution_accuracy": 7.6, "query_decomposition_score": 52.1, "domain_knowledge_f1": 16.3, "column_mapping_f1": 57.3, "join_key_f1": 33.9, "table_retrieval_f1": 66.2 } },
+        { "method": "DIN-SQL", "values": { "execution_accuracy": 5.1, "query_decomposition_score": 53.5, "domain_knowledge_f1": 16.6, "column_mapping_f1": 55.2, "join_key_f1": 33.3, "table_retrieval_f1": 66.0 } },
+        { "method": "DAIL-SQL", "values": { "execution_accuracy": 3.6, "query_decomposition_score": 49.9, "domain_knowledge_f1": 16.7, "column_mapping_f1": 51.2, "join_key_f1": 31.2, "table_retrieval_f1": 59.3 } }
+      ]
+    },
+    {
+      "id": "setting_1",
+      "label": "Setting 1",
+      "description": "With annotations for T, J, C",
+      "methods": [
+        { "method": "ReFoRCE", "values": { "execution_accuracy": 18.9, "query_decomposition_score": 58.3, "domain_knowledge_f1": 23.9, "column_mapping_f1": 82.1, "join_key_f1": 71.9, "table_retrieval_f1": 91.3 } },
+        { "method": "Few-shot", "values": { "execution_accuracy": 17.0, "query_decomposition_score": 62.8, "domain_knowledge_f1": 23.7, "column_mapping_f1": 81.4, "join_key_f1": 77.5, "table_retrieval_f1": 89.8 } },
+        { "method": "DIN-SQL", "values": { "execution_accuracy": 9.3, "query_decomposition_score": 56.4, "domain_knowledge_f1": 19.8, "column_mapping_f1": 78.4, "join_key_f1": 75.0, "table_retrieval_f1": 87.9 } },
+        { "method": "DAIL-SQL", "values": { "execution_accuracy": 8.0, "query_decomposition_score": 57.3, "domain_knowledge_f1": 23.1, "column_mapping_f1": 77.3, "join_key_f1": 70.9, "table_retrieval_f1": 88.6 } }
+      ]
+    },
+    {
+      "id": "setting_2",
+      "label": "Setting 2",
+      "description": "With all subtask annotations",
+      "methods": [
+        { "method": "ReFoRCE", "values": { "execution_accuracy": 25.9, "query_decomposition_score": 64.8, "domain_knowledge_f1": 27.1, "column_mapping_f1": 83.4, "join_key_f1": 75.7, "table_retrieval_f1": 91.9 } },
+        { "method": "Few-shot", "values": { "execution_accuracy": 23.1, "query_decomposition_score": 66.6, "domain_knowledge_f1": 26.1, "column_mapping_f1": 82.4, "join_key_f1": 80.3, "table_retrieval_f1": 90.5 } },
+        { "method": "DIN-SQL", "values": { "execution_accuracy": 13.9, "query_decomposition_score": 62.3, "domain_knowledge_f1": 26.1, "column_mapping_f1": 80.4, "join_key_f1": 77.9, "table_retrieval_f1": 89.4 } },
+        { "method": "DAIL-SQL", "values": { "execution_accuracy": 11.2, "query_decomposition_score": 63.3, "domain_knowledge_f1": 26.4, "column_mapping_f1": 79.4, "join_key_f1": 74.7, "table_retrieval_f1": 89.3 } }
+      ]
+    }
+  ]
+}

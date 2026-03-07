@@ -21,16 +21,8 @@
     annotated_subtasks: "Annotated Subtasks"
   };
 
-  const subtaskMetricLabels = {
-    execution_accuracy: "Execution Accuracy",
-    table_retrieval_f1: "Table Retrieval F1",
-    join_key_f1: "Join Key F1",
-    column_mapping_f1: "Column Mapping F1",
-    domain_knowledge_f1: "Domain Knowledge F1",
-    query_decomposition_score: "Query Decomposition Score"
-  };
-
   const colors = ["#3273dc", "#23d160", "#ff3860", "#ffdd57", "#00d1b2", "#7957d5", "#ff8c42", "#48c774"];
+  const radarMethodColors = ["#E46AA3", "#7E83FF", "#F07A7A", "#58D68D"];
   const LOGO_MARKER_SIZE = 20;
 
   const leaderboardLogoOverlayPlugin = {
@@ -421,39 +413,62 @@
     });
   }
 
-  function renderSubtaskChart(subtaskData) {
-    const metricSelect = document.getElementById("subtask-metric");
-    metricSelect.innerHTML = "";
+  function renderSubtaskChart(subtaskRadarData) {
+    const settingSelect = document.getElementById("subtask-setting");
+    settingSelect.innerHTML = "";
 
-    subtaskData.metrics.forEach((metric) => {
-      metricSelect.appendChild(createOption(metric, subtaskMetricLabels[metric]));
+    subtaskRadarData.settings.forEach((setting) => {
+      settingSelect.appendChild(
+        createOption(setting.id, `${setting.label}: ${setting.description}`)
+      );
     });
 
-    const methods = subtaskData.settings[0].methods.map((m) => m.method);
+    const axisKeys = subtaskRadarData.axes.map((axis) => axis.key);
+    const axisLabels = subtaskRadarData.axes.map((axis) => axis.label);
 
     function draw() {
-      const metric = metricSelect.value;
-      const labels = subtaskData.settings.map((s) => s.setting);
-      const datasets = methods.map((method, idx) => ({
-        label: method,
-        data: subtaskData.settings.map((setting) => {
-          const row = setting.methods.find((m) => m.method === method);
-          return row[metric];
-        }),
-        borderColor: colors[idx % colors.length],
-        backgroundColor: colors[idx % colors.length],
-        tension: 0.25
+      const setting = subtaskRadarData.settings.find((item) => item.id === settingSelect.value) || subtaskRadarData.settings[0];
+      const datasets = setting.methods.map((methodEntry, idx) => ({
+        label: methodEntry.method,
+        data: axisKeys.map((key) => methodEntry.values[key]),
+        borderColor: radarMethodColors[idx % radarMethodColors.length],
+        backgroundColor: `${radarMethodColors[idx % radarMethodColors.length]}33`,
+        pointBackgroundColor: radarMethodColors[idx % radarMethodColors.length],
+        pointBorderColor: "#ffffff",
+        pointBorderWidth: 1,
+        pointRadius: 3,
+        borderWidth: 2,
+        fill: true
       }));
 
       if (state.charts.subtask) state.charts.subtask.destroy();
       state.charts.subtask = new Chart(document.getElementById("subtask-chart"), {
-        type: "line",
-        data: { labels, datasets },
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
+        type: "radar",
+        data: {
+          labels: axisLabels,
+          datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            r: {
+              min: 0,
+              max: 100,
+              ticks: { stepSize: 20 },
+              angleLines: { color: "#e6e6e6" },
+              grid: { color: "#d9d9d9" },
+              pointLabels: { color: "#4a4a4a", font: { size: 10 } }
+            }
+          },
+          plugins: {
+            legend: { position: "top" }
+          }
+        }
       });
     }
 
-    metricSelect.addEventListener("change", draw);
+    settingSelect.addEventListener("change", draw);
     draw();
   }
 
@@ -503,12 +518,12 @@
 
   async function init() {
     try {
-      const [changelog, leaderboard, datasetStats, categoryPerformance, subtaskMetrics, errorTaxonomy] = await Promise.all([
+      const [changelog, leaderboard, datasetStats, categoryPerformance, subtaskRadar, errorTaxonomy] = await Promise.all([
         fetchJSON("static/jsons/changelog.json"),
         fetchJSON("data/leaderboard.json"),
         fetchJSON("data/dataset_stats.json"),
         fetchJSON("data/category_performance.json"),
-        fetchJSON("data/subtask_metrics.json"),
+        fetchJSON("data/subtask_radar.json"),
         fetchJSON("data/error_taxonomy.json")
       ]);
 
@@ -523,7 +538,7 @@
 
       renderDatasetChart(datasetStats);
       renderCategoryChart(categoryPerformance);
-      renderSubtaskChart(subtaskMetrics);
+      renderSubtaskChart(subtaskRadar);
       renderErrorCharts(errorTaxonomy);
     } catch (error) {
       console.error("Failed to load benchmark dashboard data:", error);
