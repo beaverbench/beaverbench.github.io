@@ -23,6 +23,7 @@
 
   const colors = ["#3273dc", "#23d160", "#ff3860", "#ffdd57", "#00d1b2", "#7957d5", "#ff8c42", "#48c774"];
   const radarMethodColors = ["#E46AA3", "#7E83FF", "#F07A7A", "#58D68D"];
+  const radarSettingColors = ["#E46AA3", "#7E83FF", "#F07A7A"];
   const LOGO_MARKER_SIZE = 20;
 
   const leaderboardLogoOverlayPlugin = {
@@ -415,31 +416,81 @@
 
   function renderSubtaskChart(subtaskRadarData) {
     const settingSelect = document.getElementById("subtask-setting");
+    const methodSelect = document.getElementById("subtask-method");
+    const settingControl = document.getElementById("subtask-setting-control");
+    const methodControl = document.getElementById("subtask-method-control");
+    const bySettingBtn = document.getElementById("subtask-view-setting-btn");
+    const byMethodBtn = document.getElementById("subtask-view-method-btn");
+    let viewMode = "by_setting";
+
     settingSelect.innerHTML = "";
+    methodSelect.innerHTML = "";
 
     subtaskRadarData.settings.forEach((setting) => {
       settingSelect.appendChild(
         createOption(setting.id, `${setting.label}: ${setting.description}`)
       );
     });
+    subtaskRadarData.settings[0].methods.forEach((methodEntry) => {
+      methodSelect.appendChild(createOption(methodEntry.method, methodEntry.method));
+    });
 
     const axisKeys = subtaskRadarData.axes.map((axis) => axis.key);
     const axisLabels = subtaskRadarData.axes.map((axis) => axis.label);
 
+    function updateSubtaskViewControls() {
+      if (viewMode === "by_setting") {
+        settingControl.classList.remove("is-hidden");
+        methodControl.classList.add("is-hidden");
+        bySettingBtn.classList.remove("is-light");
+        bySettingBtn.classList.add("is-dark");
+        byMethodBtn.classList.remove("is-dark");
+        byMethodBtn.classList.add("is-light");
+      } else {
+        methodControl.classList.remove("is-hidden");
+        settingControl.classList.add("is-hidden");
+        byMethodBtn.classList.remove("is-light");
+        byMethodBtn.classList.add("is-dark");
+        bySettingBtn.classList.remove("is-dark");
+        bySettingBtn.classList.add("is-light");
+      }
+    }
+
     function draw() {
-      const setting = subtaskRadarData.settings.find((item) => item.id === settingSelect.value) || subtaskRadarData.settings[0];
-      const datasets = setting.methods.map((methodEntry, idx) => ({
-        label: methodEntry.method,
-        data: axisKeys.map((key) => methodEntry.values[key]),
-        borderColor: radarMethodColors[idx % radarMethodColors.length],
-        backgroundColor: `${radarMethodColors[idx % radarMethodColors.length]}33`,
-        pointBackgroundColor: radarMethodColors[idx % radarMethodColors.length],
-        pointBorderColor: "#ffffff",
-        pointBorderWidth: 1,
-        pointRadius: 3,
-        borderWidth: 2,
-        fill: true
-      }));
+      let datasets = [];
+
+      if (viewMode === "by_setting") {
+        const setting = subtaskRadarData.settings.find((item) => item.id === settingSelect.value) || subtaskRadarData.settings[0];
+        datasets = setting.methods.map((methodEntry, idx) => ({
+          label: methodEntry.method,
+          data: axisKeys.map((key) => methodEntry.values[key]),
+          borderColor: radarMethodColors[idx % radarMethodColors.length],
+          backgroundColor: `${radarMethodColors[idx % radarMethodColors.length]}33`,
+          pointBackgroundColor: radarMethodColors[idx % radarMethodColors.length],
+          pointBorderColor: "#ffffff",
+          pointBorderWidth: 1,
+          pointRadius: 3,
+          borderWidth: 2,
+          fill: true
+        }));
+      } else {
+        const selectedMethod = methodSelect.value || subtaskRadarData.settings[0].methods[0].method;
+        datasets = subtaskRadarData.settings.map((setting, idx) => {
+          const methodEntry = setting.methods.find((entry) => entry.method === selectedMethod);
+          return {
+            label: setting.label,
+            data: axisKeys.map((key) => methodEntry.values[key]),
+            borderColor: radarSettingColors[idx % radarSettingColors.length],
+            backgroundColor: `${radarSettingColors[idx % radarSettingColors.length]}33`,
+            pointBackgroundColor: radarSettingColors[idx % radarSettingColors.length],
+            pointBorderColor: "#ffffff",
+            pointBorderWidth: 1,
+            pointRadius: 3,
+            borderWidth: 2,
+            fill: true
+          };
+        });
+      }
 
       if (state.charts.subtask) state.charts.subtask.destroy();
       state.charts.subtask = new Chart(document.getElementById("subtask-chart"), {
@@ -469,6 +520,19 @@
     }
 
     settingSelect.addEventListener("change", draw);
+    methodSelect.addEventListener("change", draw);
+    bySettingBtn.addEventListener("click", function () {
+      viewMode = "by_setting";
+      updateSubtaskViewControls();
+      draw();
+    });
+    byMethodBtn.addEventListener("click", function () {
+      viewMode = "by_method";
+      updateSubtaskViewControls();
+      draw();
+    });
+
+    updateSubtaskViewControls();
     draw();
   }
 
