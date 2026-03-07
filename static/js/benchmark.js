@@ -421,7 +421,7 @@
     const methodControl = document.getElementById("subtask-method-control");
     const bySettingBtn = document.getElementById("subtask-view-setting-btn");
     const byMethodBtn = document.getElementById("subtask-view-method-btn");
-    let viewMode = "by_setting";
+    let viewMode = "by_method";
 
     settingSelect.innerHTML = "";
     methodSelect.innerHTML = "";
