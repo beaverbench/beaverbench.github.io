@@ -12,7 +12,7 @@
   "methods": [
     {
       "method": "ReFoRCE",
-      "submission_date": "Feb 24, 2026",
+      "submission_date": "Feb 27, 2026",
       "scores": {
         "Claude-4.5-sonnet": 11.4,
         "GPT-o4-mini": 10.6,
@@ -26,7 +26,7 @@
     },
     {
       "method": "Few-shot",
-      "submission_date": "Feb 18, 2026",
+      "submission_date": "Feb 25, 2026",
       "scores": {
         "Claude-4.5-sonnet": 8.8,
         "GPT-o4-mini": 8.7,
@@ -40,7 +40,7 @@
     },
     {
       "method": "DIN-SQL",
-      "submission_date": "Feb 9, 2026",
+      "submission_date": "Feb 24, 2026",
       "scores": {
         "Claude-4.5-sonnet": 5.7,
         "GPT-o4-mini": 6.1,
@@ -54,7 +54,7 @@
     },
     {
       "method": "DAIL-SQL",
-      "submission_date": "Feb 3, 2026",
+      "submission_date": "Feb 24, 2026",
       "scores": {
         "Claude-4.5-sonnet": 4.5,
         "GPT-o4-mini": 4.3,
