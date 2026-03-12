@@ -600,10 +600,10 @@
       renderLeaderboard();
       setLeaderboardView("table");
 
-      renderDatasetChart(datasetStats);
-      renderCategoryChart(categoryPerformance);
+      // renderDatasetChart(datasetStats);
+      // renderCategoryChart(categoryPerformance);
       renderSubtaskChart(subtaskRadar);
-      renderErrorCharts(errorTaxonomy);
+      // renderErrorCharts(errorTaxonomy);
     } catch (error) {
       console.error("Failed to load benchmark dashboard data:", error);
     }
