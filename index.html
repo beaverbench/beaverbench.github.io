@@ -81,6 +81,35 @@
           e.trigger.innerText = "Copied!";
           setTimeout(() => (e.trigger.innerText = "Copy"), 1500);
         });
+
+        const overviewView = document.getElementById("overview-view");
+        const leaderboardView = document.getElementById("leaderboard-view");
+        const overviewLink = document.getElementById("overview-link");
+        const leaderboardLink = document.getElementById("leaderboard-link");
+
+        function setViewFromHash() {
+          const hash = window.location.hash === "#leaderboard" ? "#leaderboard" : "#overview";
+
+          if (!window.location.hash) {
+            history.replaceState(null, "", "#overview");
+          }
+
+          const showLeaderboard = hash === "#leaderboard";
+          overviewView.classList.toggle("is-hidden", showLeaderboard);
+          leaderboardView.classList.toggle("is-hidden", !showLeaderboard);
+
+          overviewLink.classList.toggle("is-dark", !showLeaderboard);
+          overviewLink.classList.toggle("is-light", showLeaderboard);
+          leaderboardLink.classList.toggle("is-dark", showLeaderboard);
+          leaderboardLink.classList.toggle("is-light", !showLeaderboard);
+
+          window.requestAnimationFrame(function () {
+            window.dispatchEvent(new Event("resize"));
+          });
+        }
+
+        window.addEventListener("hashchange", setViewFromHash);
+        setViewFromHash();
       });
 
     </script>
@@ -162,6 +191,30 @@
                       <span>Dataset and Code</span>
                     </a>
                   </span>
+                  <span class="link-block">
+                    <a
+                      id="overview-link"
+                      href="#overview"
+                      class="external-link button is-normal is-rounded is-dark"
+                    >
+                      <span class="icon">
+                        <i class="fas fa-compass"></i>
+                      </span>
+                      <span>Overview</span>
+                    </a>
+                  </span>
+                  <span class="link-block">
+                    <a
+                      id="leaderboard-link"
+                      href="#leaderboard"
+                      class="external-link button is-normal is-rounded is-light"
+                    >
+                      <span class="icon">
+                        <i class="fas fa-list-ol"></i>
+                      </span>
+                      <span>Leaderboard</span>
+                    </a>
+                  </span>
                 </div>
               </div>
             </div>
@@ -173,166 +226,161 @@
       <div class="container is-max-desktop">
         <div class="columns is-size-7">
           <div class="column is-full">
-            <div class="left-boxes">
-              <div class="leaderboard-header">
-                <h2 class="title is-3 has-text-centered">Leaderboard</h2>
-                <div class="view-toggle">
-                  <button id="table-view-btn" class="button is-small is-dark" title="Table leaderboard">
-                    <span class="icon is-small"><i class="fas fa-table"></i></span>
-                  </button>
-                  <button id="scatter-view-btn" class="button is-small is-light" title="Scatter leaderboard">
-                    <span class="icon is-small"><i class="fas fa-chart-line"></i></span>
-                  </button>
+            <div id="leaderboard-view" class="page-view is-hidden">
+              <div class="left-boxes">
+                <div class="leaderboard-header">
+                  <h2 class="title is-3 has-text-centered">Leaderboard</h2>
+                  <div class="view-toggle">
+                    <button id="table-view-btn" class="button is-small is-dark" title="Table leaderboard">
+                      <span class="icon is-small"><i class="fas fa-table"></i></span>
+                    </button>
+                    <button id="scatter-view-btn" class="button is-small is-light" title="Scatter leaderboard">
+                      <span class="icon is-small"><i class="fas fa-chart-line"></i></span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div class="leaderboard-controls">
-                <div class="field">
-                  <label class="label is-size-7">Method</label>
-                  <div class="control">
-                    <div class="select is-small is-fullwidth">
-                      <select id="method-filter"></select>
+                <div class="leaderboard-controls">
+                  <div class="field">
+                    <label class="label is-size-7">Method</label>
+                    <div class="control">
+                      <div class="select is-small is-fullwidth">
+                        <select id="method-filter"></select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label is-size-7">Model</label>
+                    <div class="control">
+                      <div class="select is-small is-fullwidth">
+                        <select id="model-filter"></select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label class="label is-size-7">Search</label>
+                    <div class="control">
+                      <input id="search-filter" class="input is-small" type="text" placeholder="Find method/model" />
                     </div>
                   </div>
                 </div>
-                <div class="field">
-                  <label class="label is-size-7">Model</label>
-                  <div class="control">
-                    <div class="select is-small is-fullwidth">
-                      <select id="model-filter"></select>
-                    </div>
+                <div id="leaderboard-table-view">
+                  <div class="table-container">
+                    <table class="table is-hoverable is-fullwidth is-size-7">
+                      <thead>
+                        <tr>
+                        <th class="sortable" data-sort-key="rank">Rank</th>
+                        <th>Submission Date</th>
+                        <th class="sortable" data-sort-key="method">Method</th>
+                        <th class="sortable" data-sort-key="model">Model</th>
+                        <th class="sortable" data-sort-key="score">Execution Accuracy</th>
+                        </tr>
+                      </thead>
+                      <tbody id="leaderboard-body">
+                        <!-- Leaderboard data will be inserted here -->
+                      </tbody>
+                    </table>
                   </div>
                 </div>
-                <div class="field">
-                  <label class="label is-size-7">Search</label>
-                  <div class="control">
-                    <input id="search-filter" class="input is-small" type="text" placeholder="Find method/model" />
+                <div id="leaderboard-scatter-view" class="is-hidden">
+                  <div class="chart-box">
+                    <canvas id="leaderboard-scatter-chart"></canvas>
                   </div>
                 </div>
               </div>
-              <div id="leaderboard-table-view">
-                <div class="table-container">
-                  <table class="table is-hoverable is-fullwidth is-size-7">
-                    <thead>
-                      <tr>
-                      <th class="sortable" data-sort-key="rank">Rank</th>
-                      <th>Submission Date</th>
-                      <th class="sortable" data-sort-key="method">Method</th>
-                      <th class="sortable" data-sort-key="model">Model</th>
-                      <th class="sortable" data-sort-key="score">Execution Accuracy</th>
-                      </tr>
-                    </thead>
-                    <tbody id="leaderboard-body">
-                      <!-- Leaderboard data will be inserted here -->
-                    </tbody>
-                  </table>
+              <div class="left-boxes">
+                <div class="subtask-header">
+                  <h2 class="title is-5">Subtask Metrics Across Settings</h2>
+                  <div class="subtask-view-toggle">
+                    <button id="subtask-view-method-btn" class="button is-small is-dark" title="By method">
+                      <span class="icon is-small"><i class="fas fa-user"></i></span>
+                    </button>
+                    <button id="subtask-view-setting-btn" class="button is-small is-light" title="By setting">
+                      <span class="icon is-small"><i class="fas fa-layer-group"></i></span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-              <div id="leaderboard-scatter-view" class="is-hidden">
+                <div class="subtask-controls">
+                  <div id="subtask-setting-control" class="select is-small">
+                    <select id="subtask-setting"></select>
+                  </div>
+                  <div id="subtask-method-control" class="select is-small is-hidden">
+                    <select id="subtask-method"></select>
+                  </div>
+                </div>
                 <div class="chart-box">
-                  <canvas id="leaderboard-scatter-chart"></canvas>
+                  <canvas id="subtask-chart"></canvas>
                 </div>
               </div>
-            </div>
-            <!-- <div class="left-boxes">
-              <h2 class="title is-5">Dataset Stats Comparison</h2>
-              <div class="select is-small mb-2">
-                <select id="dataset-metric"></select>
-              </div>
-              <div class="chart-box">
-                <canvas id="dataset-chart"></canvas>
-              </div>
-            </div> -->
-            <!-- <div class="left-boxes">
-              <h2 class="title is-5">Category Performance</h2>
-              <div class="chart-box">
-                <canvas id="category-chart"></canvas>
-              </div>
-            </div> -->
-            <div class="left-boxes">
-              <div class="subtask-header">
-                <h2 class="title is-5">Subtask Metrics Across Settings</h2>
-                <div class="subtask-view-toggle">
-                  <button id="subtask-view-setting-btn" class="button is-small is-dark" title="By setting">
-                    <span class="icon is-small"><i class="fas fa-layer-group"></i></span>
-                  </button>
-                  <button id="subtask-view-method-btn" class="button is-small is-light" title="By method">
-                    <span class="icon is-small"><i class="fas fa-user"></i></span>
-                  </button>
-                </div>
-              </div>
-              <div class="subtask-controls">
-                <div id="subtask-setting-control" class="select is-small">
-                  <select id="subtask-setting"></select>
-                </div>
-                <div id="subtask-method-control" class="select is-small is-hidden">
-                  <select id="subtask-method"></select>
-                </div>
-              </div>
-              <div class="chart-box">
-                <canvas id="subtask-chart"></canvas>
-              </div>
-            </div>
-            <!-- <div class="left-boxes">
-              <h2 class="title is-5">Error Taxonomy</h2>
-              <div class="chart-box mb-2">
-                <canvas id="error-top-chart"></canvas>
-              </div>
-              <div class="select is-small mb-2">
-                <select id="error-group"></select>
-              </div>
-              <div class="chart-box">
-                <canvas id="error-breakdown-chart"></canvas>
-              </div>
-            </div> -->
-            <div class="left-boxes">
-              <h2 class="title is-4">BEAVER</h2>
-              <p>Beaver is an enterprise text-to-SQL dataset consisted of xxx queries and xxx tables across xxx databases. Queries and databases were collected from <i>private</i> organizations. Compared to previous text-to-SQL datasets focusing on public tables and
-              We also encourage the problem open-domain text-to-SQL</p>
-            </div>
-            <div class="left-boxes">
-              <h2 class="title is-4">Usage</h2>
-              <p>
-                We have created a unified MySQL version for our dataset. A free
-                MySQL installation can be found
-                <a href="https://dev.mysql.com/downloads/mysql/">here</a>. After
-                the installation, import the MySQL dump files from the google
-                drive to your local MySQL databases using
-              </p>
-              <pre><code>mysql -u root -p < `xxx.sql`</code></pre>
-              <p>
-                To execute a SQL statement, you can either log in to the MySQL
-                interface or you can do it via
-                <a href="https://pypi.org/project/mysql-connector-python/"
-                  >mysql-connector-python</a
-                >.
-              </p>
-              <br />
-              <p>
-                If you want to use the Oracle version of
-                <code>DW</code> queries, you can download the free oracle
-                database and import the CSVs.
-              </p>
-            </div>
-            <div class="left-boxes">
-              <h2 class="title is-4">Changelog</h2>
-              <div class="container" id="changelog-body"></div>
-            </div>
-            <div class="left-boxes">
-              <h2 class="title is-4">Citation</h2>
-              <p>
-                If you find our data or the paper helpful, please cite the
-                paper:
-              </p>
-              <div class="code-container">
-                <pre><code id="codeBlock">@article{chen2024beaver,
+              <div class="left-boxes">
+                <h2 class="title is-4">Citation</h2>
+                <p>
+                  If you find our data or the paper helpful, please cite the
+                  paper:
+                </p>
+                <div class="code-container">
+                  <pre><code id="codeBlockLeaderboard">@article{chen2024beaver,
 title={BEAVER: an enterprise benchmark for text-to-sql},
   author={Chen, Peter Baile and Wenz, Fabian and Zhang, Yi and Yang, Devin and Choi, Justin and Tatbul, Nesime and Cafarella, Michael and Demiralp, {\c{C}}a{\u{g}}atay and Stonebraker, Michael},
   journal={arXiv preprint arXiv:2409.02038},
   year={2024}
 }</code></pre>
-                <button class="copy-btn" data-clipboard-target="#codeBlock">
-                  Copy
-                </button>
+                  <button class="copy-btn" data-clipboard-target="#codeBlockLeaderboard">
+                    Copy
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div id="overview-view" class="page-view">
+              <div class="left-boxes">
+                <h2 class="title is-4">BEAVER</h2>
+                <p>Beaver is an enterprise text-to-SQL dataset consisted of xxx queries and xxx tables across xxx databases. Queries and databases were collected from <i>private</i> organizations. Compared to previous text-to-SQL datasets focusing on public tables and
+                We also encourage the problem open-domain text-to-SQL</p>
+              </div>
+              <div class="left-boxes">
+                <h2 class="title is-4">Usage</h2>
+                <p>
+                  We have created a unified MySQL version for our dataset. A free
+                  MySQL installation can be found
+                  <a href="https://dev.mysql.com/downloads/mysql/">here</a>. After
+                  the installation, import the MySQL dump files from the google
+                  drive to your local MySQL databases using
+                </p>
+                <pre><code>mysql -u root -p < `xxx.sql`</code></pre>
+                <p>
+                  To execute a SQL statement, you can either log in to the MySQL
+                  interface or you can do it via
+                  <a href="https://pypi.org/project/mysql-connector-python/"
+                    >mysql-connector-python</a
+                  >.
+                </p>
+                <br />
+                <p>
+                  If you want to use the Oracle version of
+                  <code>DW</code> queries, you can download the free oracle
+                  database and import the CSVs.
+                </p>
+              </div>
+              <div class="left-boxes">
+                <h2 class="title is-4">Changelog</h2>
+                <div class="container" id="changelog-body"></div>
+              </div>
+              <div class="left-boxes">
+                <h2 class="title is-4">Citation</h2>
+                <p>
+                  If you find our data or the paper helpful, please cite the
+                  paper:
+                </p>
+                <div class="code-container">
+                  <pre><code id="codeBlockOverview">@article{chen2024beaver,
+title={BEAVER: an enterprise benchmark for text-to-sql},
+  author={Chen, Peter Baile and Wenz, Fabian and Zhang, Yi and Yang, Devin and Choi, Justin and Tatbul, Nesime and Cafarella, Michael and Demiralp, {\c{C}}a{\u{g}}atay and Stonebraker, Michael},
+  journal={arXiv preprint arXiv:2409.02038},
+  year={2024}
+}</code></pre>
+                  <button class="copy-btn" data-clipboard-target="#codeBlockOverview">
+                    Copy
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -433,6 +481,16 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       user-select: none;
     }
 
+    #leaderboard-table-view .table {
+      width: 100%;
+      table-layout: auto;
+    }
+
+    #leaderboard-table-view .table th,
+    #leaderboard-table-view .table td {
+      vertical-align: middle;
+    }
+
     .rank-cell {
       text-align: center;
       min-width: 92px;
@@ -474,6 +532,47 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       position: relative;
       min-height: 280px;
       width: 100%;
+    }
+
+    @media screen and (max-width: 768px) {
+      .leaderboard-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .view-toggle {
+        position: static;
+        align-self: flex-end;
+      }
+
+      #leaderboard-table-view .table {
+        font-size: 0.68rem;
+      }
+
+      #leaderboard-table-view .table th,
+      #leaderboard-table-view .table td {
+        padding: 0.45rem 0.3rem;
+      }
+
+      .rank-cell {
+        min-width: 56px;
+      }
+
+      .date-pill {
+        padding: 2px 6px;
+        font-size: 0.68rem;
+      }
+
+      .model-cell {
+        gap: 4px;
+      }
+
+      .model-logo {
+        width: 12px;
+        height: 12px;
+      }
     }
   </style>
 </html>
