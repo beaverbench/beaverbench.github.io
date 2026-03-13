@@ -727,15 +727,19 @@
 
         const title = document.createElement("div");
         title.className = "subtask-legend-title";
-        title.textContent = item.title;
-        text.appendChild(title);
-
         if (item.description) {
-          const description = document.createElement("div");
-          description.className = "subtask-legend-description";
-          description.textContent = item.description;
-          text.appendChild(description);
+          const titleStrong = document.createElement("span");
+          titleStrong.textContent = item.title;
+          title.appendChild(titleStrong);
+
+          const description = document.createElement("span");
+          description.className = "subtask-legend-inline-description";
+          description.textContent = `: ${item.description}`;
+          title.appendChild(description);
+        } else {
+          title.textContent = item.title;
         }
+        text.appendChild(title);
 
         node.appendChild(text);
         node.addEventListener("click", function () {

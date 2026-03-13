@@ -61,7 +61,7 @@
     <script src="static/js/bulma-slider.min.js"></script>
     <script src="static/js/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="static/js/benchmark.js?v=20260320"></script>
+    <script defer src="static/js/benchmark.js?v=20260322"></script>
 
     <!--imports for code highlighting and copy-->
     <link
@@ -393,12 +393,12 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
                       <div id="example-mapping" class="example-mapping"></div>
                     </div>
                     <div class="example-panel">
-                      <h3 class="example-label">Subquery Decomposition</h3>
-                      <div id="example-subqueries" class="example-subqueries"></div>
-                    </div>
-                    <div class="example-panel example-panel--evidence">
                       <h3 class="example-label">Evidence</h3>
                       <ul id="example-evidence" class="example-list"></ul>
+                    </div>
+                    <div class="example-panel example-panel--evidence">
+                      <h3 class="example-label">Subquery Decomposition</h3>
+                      <div id="example-subqueries" class="example-subqueries"></div>
                     </div>
                   </div>
                 </div>
@@ -639,12 +639,12 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       font-weight: 600;
       color: #363636;
       line-height: 1.35;
+      overflow-wrap: anywhere;
     }
 
-    .subtask-legend-description {
+    .subtask-legend-inline-description {
+      font-weight: 400;
       color: #5f6773;
-      line-height: 1.4;
-      margin-top: 2px;
     }
 
     .sortable {
