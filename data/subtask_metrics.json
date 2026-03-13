@@ -44,7 +44,7 @@
     },
     {
       "setting": "Setting 1",
-      "description": "With schema-linking annotations (table retrieval, join keys, column mapping)",
+      "description": "With annotations for schema-linking subtasks (table retrieval, join keys, column mapping)",
       "methods": [
         {
           "method": "ReFoRCE",

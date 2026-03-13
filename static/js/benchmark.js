@@ -250,7 +250,7 @@
 
         const key = document.createElement("div");
         key.className = "example-mapping-key";
-        key.textContent = phrase;
+        key.textContent = `"${phrase}"`;
         item.appendChild(key);
 
         const values = document.createElement("div");
@@ -290,7 +290,7 @@
 
         const questionKey = document.createElement("div");
         questionKey.className = "example-subquery-key";
-        questionKey.textContent = `subquery ${index}`;
+        questionKey.textContent = `Subquery ${index+1}`;
         item.appendChild(questionKey);
 
         const questionValue = document.createElement("p");
@@ -300,7 +300,7 @@
 
         const sqlKey = document.createElement("div");
         sqlKey.className = "example-subquery-key";
-        sqlKey.textContent = `sub-SQL ${index}`;
+        sqlKey.textContent = `Sub-SQL ${index+1}`;
         item.appendChild(sqlKey);
 
         const sqlValue = document.createElement("pre");

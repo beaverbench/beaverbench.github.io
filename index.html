@@ -17,10 +17,10 @@
     <!-- <meta name="description" content="Beaver: An Enterprise Benchmark for Text-to-SQL"> -->
     <meta
       property="og:title"
-      content="Beaver: An Enterprise Benchmark for Text-to-SQL"
+      content="BEAVER: An Enterprise Benchmark for Text-to-SQL"
     />
     <!-- <meta property="og:description" content="SOCIAL MEDIA DESCRIPTION TAG TAG"/> -->
-    <meta property="og:url" content="https://peterbaile.github.io/beaver/" />
+    <meta property="og:url" content="https://beaverbench.github.io/" />
     <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X630-->
     <meta property="og:image" content="static/images/beaver.png" />
     <!-- <meta property="og:image:width" content="1200"/>
@@ -28,7 +28,7 @@
 
     <meta
       name="twitter:title"
-      content="Beaver: An Enterprise Benchmark for Text-to-SQL"
+      content="BEAVER: An Enterprise Benchmark for Text-to-SQL"
     />
     <!-- <meta name="twitter:description" content="TWITTER BANNER DESCRIPTION META TAG"> -->
     <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X600-->
@@ -349,7 +349,7 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
                 <div class="example-header">
                   <div>
                     <h2 class="title is-4">Example Data</h2>
-                    <p class="example-subtitle">Representative BEAVER tasks with question, SQL, and annotation slices.</p>
+                    <p class="example-subtitle">Representative BEAVER tasks with question, SQL, and subtask annotations.</p>
                   </div>
                   <div class="example-toolbar">
                     <button id="example-prev" class="example-nav" type="button" aria-label="Previous example">
@@ -381,23 +381,28 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
                       <pre class="example-code"><code id="example-sql"></code></pre>
                     </div>
                     <div class="example-panel">
-                      <h3 class="example-label">Gold Tables</h3>
+                      <h3 class="example-label">Multi-Table retrieval</h3>
+                      <h5 class="example-sublabel">Tables used in SQL</h5>
                       <div id="example-gold-tables" class="example-chip-list"></div>
                     </div>
                     <div class="example-panel">
                       <h3 class="example-label">Join Keys</h3>
+                      <h5 class="example-sublabel">Connections among used tables</h5>
                       <div id="example-join-keys" class="example-chip-list"></div>
                     </div>
                     <div class="example-panel">
                       <h3 class="example-label">Column Mapping</h3>
+                      <h5 class="example-sublabel">Mapping from question phrases to table columns(s)</h5>
                       <div id="example-mapping" class="example-mapping"></div>
                     </div>
                     <div class="example-panel">
-                      <h3 class="example-label">Evidence</h3>
+                      <h3 class="example-label">Domain knowledge</h3>
+                      <h5 class="example-sublabel">Domain-specific predictates used in SQL</h5>
                       <ul id="example-evidence" class="example-list"></ul>
                     </div>
                     <div class="example-panel example-panel--evidence">
                       <h3 class="example-label">Subquery Decomposition</h3>
+                      <h5 class="example-sublabel">Decomposition of SQL into simpler sub-queries</h5>
                       <div id="example-subqueries" class="example-subqueries"></div>
                     </div>
                   </div>
@@ -812,6 +817,15 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       margin-bottom: 10px;
     }
 
+    .example-sublabel {
+      color: #363636;
+      font-size: 0.82rem;
+      /* text-transform: uppercase; */
+      font-style: italic;
+      letter-spacing: 0.04em;
+      margin-bottom: 10px;
+    }
+
     .example-question {
       font-size: inherit;
       line-height: 1.6;
@@ -928,7 +942,7 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       display: flex;
       flex-direction: column;
       gap: 10px;
-      height: 140px;
+      height: 300px;
       overflow: auto;
       padding-right: 4px;
       color: #4a4a4a;

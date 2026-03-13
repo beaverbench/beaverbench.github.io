@@ -22,7 +22,7 @@
     {
       "id": "setting_1",
       "label": "Setting 1",
-      "description": "With schema-linking annotations (table retrieval, join keys, column mapping)",
+      "description": "With annotations for schema-linking subtasks (table retrieval, join keys, column mapping)",
       "methods": [
         { "method": "ReFoRCE", "values": { "execution_accuracy": 18.9, "query_decomposition_score": 58.3, "domain_knowledge_f1": 23.9, "column_mapping_f1": 82.1, "join_key_f1": 71.9, "table_retrieval_f1": 91.3 } },
         { "method": "Few-shot", "values": { "execution_accuracy": 17.0, "query_decomposition_score": 62.8, "domain_knowledge_f1": 23.7, "column_mapping_f1": 81.4, "join_key_f1": 77.5, "table_retrieval_f1": 89.8 } },
