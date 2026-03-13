@@ -117,6 +117,12 @@
     return joinKeyPair.join(" = ");
   }
 
+  function appendEmptyListMessage(container, tagName, message) {
+    const item = document.createElement(tagName);
+    item.textContent = message;
+    container.appendChild(item);
+  }
+
   async function loadSqlFormatter() {
     try {
       const module = await import("https://cdn.jsdelivr.net/npm/sql-formatter@15.6.10/+esm");
@@ -225,6 +231,83 @@
       joinKeys.appendChild(chip);
     });
 
+    const mapping = document.getElementById("example-mapping");
+    mapping.innerHTML = "";
+    const mappingEntries = Object.entries(example.mapping || {});
+    if (mappingEntries.length === 0) {
+      const empty = document.createElement("p");
+      empty.textContent = "No column mapping annotations available for this example.";
+      mapping.appendChild(empty);
+    } else {
+      mappingEntries.forEach(function (entry) {
+        const [phrase, columns] = entry;
+        const item = document.createElement("div");
+        item.className = "example-mapping-item";
+
+        const key = document.createElement("div");
+        key.className = "example-mapping-key";
+        key.textContent = phrase;
+        item.appendChild(key);
+
+        const values = document.createElement("div");
+        values.className = "example-mapping-values";
+        (columns || []).forEach(function (columnName) {
+          const value = document.createElement("span");
+          value.className = "example-mapping-value";
+          value.textContent = columnName;
+          values.appendChild(value);
+        });
+
+        if (!values.childNodes.length) {
+          const value = document.createElement("span");
+          value.className = "example-mapping-value";
+          value.textContent = "No mapped columns";
+          values.appendChild(value);
+        }
+
+        item.appendChild(values);
+        mapping.appendChild(item);
+      });
+    }
+
+    const subqueries = document.getElementById("example-subqueries");
+    subqueries.innerHTML = "";
+    const subqueryQuestions = example.subquery_gold_questions || [];
+    const subqueryQueries = example.subquery_gold_queries || [];
+    const subqueryCount = Math.max(subqueryQuestions.length, subqueryQueries.length);
+    if (subqueryCount === 0) {
+      const empty = document.createElement("p");
+      empty.textContent = "No subquery decomposition annotations available for this example.";
+      subqueries.appendChild(empty);
+    } else {
+      for (let index = 0; index < subqueryCount; index += 1) {
+        const item = document.createElement("div");
+        item.className = "example-subquery-item";
+
+        const questionKey = document.createElement("div");
+        questionKey.className = "example-subquery-key";
+        questionKey.textContent = `subquery ${index}`;
+        item.appendChild(questionKey);
+
+        const questionValue = document.createElement("p");
+        questionValue.className = "example-subquery-value";
+        questionValue.textContent = subqueryQuestions[index] || "No subquery question";
+        item.appendChild(questionValue);
+
+        const sqlKey = document.createElement("div");
+        sqlKey.className = "example-subquery-key";
+        sqlKey.textContent = `sub-SQL ${index}`;
+        item.appendChild(sqlKey);
+
+        const sqlValue = document.createElement("pre");
+        sqlValue.className = "example-subquery-sql";
+        sqlValue.textContent = formatExampleSql(subqueryQueries[index] || "No subquery SQL");
+        item.appendChild(sqlValue);
+
+        subqueries.appendChild(item);
+      }
+    }
+
     const evidenceList = document.getElementById("example-evidence");
     evidenceList.innerHTML = "";
     const evidence = []
@@ -232,10 +315,11 @@
       .concat(example.external_evidence || []);
 
     if (evidence.length === 0) {
-      // const item = document.createElement("li");
-      // item.textContent = "No evidence annotations available for this example.";
-      // evidenceList.appendChild(item);
-      evidenceList.innerHTML = "No evidence annotations available for this example.";
+      appendEmptyListMessage(
+        evidenceList,
+        "li",
+        "No evidence annotations available for this example."
+      );
     } else {
       evidence.forEach((entry) => {
         const item = document.createElement("li");

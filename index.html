@@ -61,7 +61,7 @@
     <script src="static/js/bulma-slider.min.js"></script>
     <script src="static/js/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="static/js/benchmark.js?v=20260314"></script>
+    <script defer src="static/js/benchmark.js?v=20260316"></script>
 
     <!--imports for code highlighting and copy-->
     <link
@@ -386,6 +386,14 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
                     <div class="example-panel">
                       <h3 class="example-label">Join Keys</h3>
                       <div id="example-join-keys" class="example-chip-list"></div>
+                    </div>
+                    <div class="example-panel">
+                      <h3 class="example-label">Column Mapping</h3>
+                      <div id="example-mapping" class="example-mapping"></div>
+                    </div>
+                    <div class="example-panel">
+                      <h3 class="example-label">Subquery Decomposition</h3>
+                      <div id="example-subqueries" class="example-subqueries"></div>
                     </div>
                     <div class="example-panel example-panel--evidence">
                       <h3 class="example-label">Evidence</h3>
@@ -790,7 +798,7 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       padding-left: 18px;
       color: #4a4a4a;
       font-size: inherit;
-      /* height: 90px; */
+      height: 90px;
       overflow: auto;
       padding-right: 6px;
       max-width: 100%;
@@ -798,8 +806,103 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       list-style-type: disc;
     }
 
+    .example-list--ordered {
+      list-style-type: decimal;
+    }
+
     .example-list li + li {
       margin-top: 6px;
+    }
+
+    .example-mapping {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      height: 140px;
+      overflow: auto;
+      padding-right: 4px;
+      color: #4a4a4a;
+      max-width: 100%;
+    }
+
+    .example-mapping-item {
+      border-bottom: 1px solid #e5e8ef;
+      padding-bottom: 8px;
+    }
+
+    .example-mapping-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .example-mapping-key {
+      font-weight: 600;
+      margin-bottom: 4px;
+      overflow-wrap: anywhere;
+    }
+
+    .example-mapping-values {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .example-mapping-value {
+      background: #eef3ff;
+      border: 1px solid #d7def5;
+      border-radius: 8px;
+      color: #3b4a73;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.92em;
+      line-height: 1.35;
+      padding: 4px 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .example-subqueries {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      height: 140px;
+      overflow: auto;
+      padding-right: 4px;
+      color: #4a4a4a;
+      max-width: 100%;
+    }
+
+    .example-subquery-item {
+      border-bottom: 1px solid #e5e8ef;
+      padding-bottom: 10px;
+    }
+
+    .example-subquery-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .example-subquery-key {
+      font-weight: 600;
+      margin-bottom: 4px;
+      overflow-wrap: anywhere;
+    }
+
+    .example-subquery-value {
+      margin: 0 0 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .example-subquery-sql {
+      background: #ffffff;
+      border: 1px solid #d9d9d9;
+      border-radius: 8px;
+      color: #363636;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.92em;
+      line-height: 1.45;
+      margin: 0;
+      padding: 10px;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     @media screen and (max-width: 768px) {
@@ -900,14 +1003,18 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       }
 
       .example-chip-list,
-      .example-list {
+      .example-list,
+      .example-mapping,
+      .example-subqueries {
         height: 72px;
       }
 
       .example-question,
       .example-code,
       .example-chip-list,
-      .example-list {
+      .example-list,
+      .example-mapping,
+      .example-subqueries {
         font-size: inherit;
       }
     }
