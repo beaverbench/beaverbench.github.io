@@ -6,7 +6,8 @@
     logoImages: {},
     leaderboardView: "table",
     exampleData: [],
-    exampleIndex: 0
+    exampleIndex: 0,
+    sqlFormatter: null
   };
 
   const datasetMetricLabels = {
@@ -116,13 +117,95 @@
     return joinKeyPair.join(" = ");
   }
 
+  async function loadSqlFormatter() {
+    try {
+      const module = await import("https://cdn.jsdelivr.net/npm/sql-formatter@15.6.10/+esm");
+      state.sqlFormatter = (
+        (module && typeof module.format === "function" && module.format) ||
+        (module && module.default && typeof module.default.format === "function" && module.default.format) ||
+        null
+      );
+    } catch (error) {
+      console.warn("Falling back to built-in SQL formatting:", error);
+      state.sqlFormatter = null;
+    }
+  }
+
+  function getExampleCategoryLabel(sourceFile) {
+    if (sourceFile === "filtered_chain_without_domain.json") {
+      return "Complex query";
+    }
+    if (sourceFile === "filtered_tree_with_domain.json") {
+      return "Domain-specific query";
+    }
+    if (
+      sourceFile === "filtered_tree_chain_with_domain.json" ||
+      sourceFile === "filtered_chain_tree_with_domain.json"
+    ) {
+      return "Domain-specific complex query";
+    }
+    return sourceFile || "example";
+  }
+
+  function formatExampleSqlFallback(sql) {
+    if (!sql) return "";
+
+    const normalized = sql.replace(/\s+/g, " ").trim();
+    const replacements = [
+      [/\bWITH\b/gi, "\nWITH"],
+      [/\bSELECT\b/gi, "\nSELECT"],
+      [/\bFROM\b/gi, "\nFROM"],
+      [/\bWHERE\b/gi, "\nWHERE"],
+      [/\bGROUP BY\b/gi, "\nGROUP BY"],
+      [/\bORDER BY\b/gi, "\nORDER BY"],
+      [/\bHAVING\b/gi, "\nHAVING"],
+      [/\bLIMIT\b/gi, "\nLIMIT"],
+      [/\bUNION ALL\b/gi, "\nUNION ALL"],
+      [/\bUNION\b/gi, "\nUNION"],
+      [/\bINNER JOIN\b/gi, "\n  INNER JOIN"],
+      [/\bLEFT JOIN\b/gi, "\n  LEFT JOIN"],
+      [/\bRIGHT JOIN\b/gi, "\n  RIGHT JOIN"],
+      [/\bFULL JOIN\b/gi, "\n  FULL JOIN"],
+      [/\bCROSS JOIN\b/gi, "\n  CROSS JOIN"],
+      [/\bJOIN\b/gi, "\n  JOIN"],
+      [/\bON\b/gi, "\n    ON"],
+      [/\bAND\b/gi, "\n    AND"],
+      [/\bOR\b/gi, "\n    OR"]
+    ];
+
+    const formatted = replacements.reduce(function (value, replacement) {
+      return value.replace(replacement[0], replacement[1]);
+    }, normalized);
+
+    return formatted.replace(/^\s*\n/, "").trim();
+  }
+
+  function formatExampleSql(sql) {
+    if (!sql) return "";
+
+    if (typeof state.sqlFormatter === "function") {
+      try {
+        return state.sqlFormatter(sql, {
+          language: "mysql",
+          tabWidth: 2,
+          keywordCase: "upper",
+          linesBetweenQueries: 1
+        });
+      } catch (error) {
+        console.warn("sql-formatter failed, using fallback formatter:", error);
+      }
+    }
+
+    return formatExampleSqlFallback(sql);
+  }
+
   function renderExample(example) {
     if (!example) return;
 
     document.getElementById("example-db-id").textContent = `DB: ${example.db_id || "unknown"}`;
-    document.getElementById("example-source-file").textContent = example.source_file || "example";
+    document.getElementById("example-source-file").textContent = getExampleCategoryLabel(example.source_file);
     document.getElementById("example-question").textContent = example.question || "";
-    document.getElementById("example-sql").textContent = example.sql || "";
+    document.getElementById("example-sql").textContent = formatExampleSql(example.sql);
 
     const goldTables = document.getElementById("example-gold-tables");
     goldTables.innerHTML = "";
@@ -686,6 +769,7 @@
         fetchJSON("data/example_data.json")
       ]);
 
+      await loadSqlFormatter();
       fillChangelog(changelog);
       bindExampleBrowser(exampleData);
 
