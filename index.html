@@ -61,7 +61,7 @@
     <script src="static/js/bulma-slider.min.js"></script>
     <script src="static/js/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="static/js/benchmark.js?v=20260316"></script>
+    <script defer src="static/js/benchmark.js?v=20260318"></script>
 
     <!--imports for code highlighting and copy-->
     <link
@@ -308,6 +308,7 @@
                     <select id="subtask-method"></select>
                   </div>
                 </div>
+                <div id="subtask-legend" class="subtask-legend"></div>
                 <div class="chart-box">
                   <canvas id="subtask-chart"></canvas>
                 </div>
@@ -580,6 +581,49 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       gap: 10px;
       flex-wrap: wrap;
       margin-bottom: 10px;
+    }
+
+    .subtask-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .subtask-legend-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      min-width: 220px;
+      max-width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #d9dde5;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.82);
+    }
+
+    .subtask-legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      flex: 0 0 12px;
+      margin-top: 4px;
+    }
+
+    .subtask-legend-text {
+      min-width: 0;
+    }
+
+    .subtask-legend-title {
+      font-weight: 600;
+      color: #363636;
+      line-height: 1.35;
+    }
+
+    .subtask-legend-description {
+      color: #5f6773;
+      line-height: 1.4;
+      margin-top: 2px;
     }
 
     .sortable {
@@ -969,6 +1013,10 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
         width: 38px;
         height: 38px;
         border-radius: 10px;
+      }
+
+      .subtask-legend-item {
+        min-width: 100%;
       }
 
       #example-prev {

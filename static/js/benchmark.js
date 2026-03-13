@@ -681,6 +681,7 @@
     const methodSelect = document.getElementById("subtask-method");
     const settingControl = document.getElementById("subtask-setting-control");
     const methodControl = document.getElementById("subtask-method-control");
+    const legend = document.getElementById("subtask-legend");
     const bySettingBtn = document.getElementById("subtask-view-setting-btn");
     const byMethodBtn = document.getElementById("subtask-view-method-btn");
     let viewMode = "by_method";
@@ -699,6 +700,37 @@
 
     const axisKeys = subtaskRadarData.axes.map((axis) => axis.key);
     const axisLabels = subtaskRadarData.axes.map((axis) => axis.label);
+
+    function renderSubtaskLegend(items) {
+      legend.innerHTML = "";
+      items.forEach(function (item) {
+        const node = document.createElement("div");
+        node.className = "subtask-legend-item";
+
+        const swatch = document.createElement("span");
+        swatch.className = "subtask-legend-swatch";
+        swatch.style.backgroundColor = item.color;
+        node.appendChild(swatch);
+
+        const text = document.createElement("div");
+        text.className = "subtask-legend-text";
+
+        const title = document.createElement("div");
+        title.className = "subtask-legend-title";
+        title.textContent = item.title;
+        text.appendChild(title);
+
+        if (item.description) {
+          const description = document.createElement("div");
+          description.className = "subtask-legend-description";
+          description.textContent = item.description;
+          text.appendChild(description);
+        }
+
+        node.appendChild(text);
+        legend.appendChild(node);
+      });
+    }
 
     function updateSubtaskViewControls() {
       if (viewMode === "by_setting") {
@@ -720,6 +752,7 @@
 
     function draw() {
       let datasets = [];
+      let legendItems = [];
 
       if (viewMode === "by_setting") {
         const setting = subtaskRadarData.settings.find((item) => item.id === settingSelect.value) || subtaskRadarData.settings[0];
@@ -735,12 +768,17 @@
           borderWidth: 2,
           fill: true
         }));
+        legendItems = setting.methods.map((methodEntry, idx) => ({
+          title: methodEntry.method,
+          description: "",
+          color: radarMethodColors[idx % radarMethodColors.length]
+        }));
       } else {
         const selectedMethod = methodSelect.value || subtaskRadarData.settings[0].methods[0].method;
         datasets = subtaskRadarData.settings.map((setting, idx) => {
           const methodEntry = setting.methods.find((entry) => entry.method === selectedMethod);
           return {
-            label: setting.label,
+            label: `${setting.label}: ${setting.description}`,
             data: axisKeys.map((key) => methodEntry.values[key]),
             borderColor: radarSettingColors[idx % radarSettingColors.length],
             backgroundColor: `${radarSettingColors[idx % radarSettingColors.length]}33`,
@@ -752,7 +790,14 @@
             fill: true
           };
         });
+        legendItems = subtaskRadarData.settings.map((setting, idx) => ({
+          title: setting.label,
+          description: setting.description,
+          color: radarSettingColors[idx % radarSettingColors.length]
+        }));
       }
+
+      renderSubtaskLegend(legendItems);
 
       if (state.charts.subtask) state.charts.subtask.destroy();
       state.charts.subtask = new Chart(document.getElementById("subtask-chart"), {
@@ -775,7 +820,7 @@
             }
           },
           plugins: {
-            legend: { position: "top" }
+            legend: { display: false }
           }
         }
       });

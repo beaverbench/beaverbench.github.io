@@ -11,7 +11,7 @@
     {
       "id": "setting_0",
       "label": "Setting 0",
-      "description": "End-to-end",
+      "description": "End-to-end (no subtask annotations)",
       "methods": [
         { "method": "ReFoRCE", "values": { "execution_accuracy": 9.5, "query_decomposition_score": 50.8, "domain_knowledge_f1": 20.4, "column_mapping_f1": 61.6, "join_key_f1": 35.5, "table_retrieval_f1": 70.1 } },
         { "method": "Few-shot", "values": { "execution_accuracy": 7.6, "query_decomposition_score": 52.1, "domain_knowledge_f1": 16.3, "column_mapping_f1": 57.3, "join_key_f1": 33.9, "table_retrieval_f1": 66.2 } },
@@ -22,7 +22,7 @@
     {
       "id": "setting_1",
       "label": "Setting 1",
-      "description": "With annotations for T, J, C",
+      "description": "With schema-linking annotations (table retrieval, join keys, column mapping)",
       "methods": [
         { "method": "ReFoRCE", "values": { "execution_accuracy": 18.9, "query_decomposition_score": 58.3, "domain_knowledge_f1": 23.9, "column_mapping_f1": 82.1, "join_key_f1": 71.9, "table_retrieval_f1": 91.3 } },
         { "method": "Few-shot", "values": { "execution_accuracy": 17.0, "query_decomposition_score": 62.8, "domain_knowledge_f1": 23.7, "column_mapping_f1": 81.4, "join_key_f1": 77.5, "table_retrieval_f1": 89.8 } },
