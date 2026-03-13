@@ -61,7 +61,7 @@
     <script src="static/js/bulma-slider.min.js"></script>
     <script src="static/js/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="static/js/benchmark.js?v=20260318"></script>
+    <script defer src="static/js/benchmark.js?v=20260319"></script>
 
     <!--imports for code highlighting and copy-->
     <link
@@ -586,8 +586,14 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
     .subtask-legend {
       display: flex;
       flex-wrap: wrap;
+      justify-content: center;
       gap: 10px;
       margin-bottom: 12px;
+    }
+
+    .subtask-legend--stacked {
+      flex-direction: column;
+      align-items: center;
     }
 
     .subtask-legend-item {
@@ -600,6 +606,10 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       border: 1px solid #d9dde5;
       border-radius: 12px;
       background: rgba(255, 255, 255, 0.82);
+    }
+
+    .subtask-legend--stacked .subtask-legend-item {
+      width: min(100%, 720px);
     }
 
     .subtask-legend-swatch {

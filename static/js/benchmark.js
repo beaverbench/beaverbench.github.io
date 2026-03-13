@@ -736,6 +736,7 @@
       if (viewMode === "by_setting") {
         settingControl.classList.remove("is-hidden");
         methodControl.classList.add("is-hidden");
+        legend.classList.remove("subtask-legend--stacked");
         bySettingBtn.classList.remove("is-light");
         bySettingBtn.classList.add("is-dark");
         byMethodBtn.classList.remove("is-dark");
@@ -743,6 +744,7 @@
       } else {
         methodControl.classList.remove("is-hidden");
         settingControl.classList.add("is-hidden");
+        legend.classList.add("subtask-legend--stacked");
         byMethodBtn.classList.remove("is-light");
         byMethodBtn.classList.add("is-dark");
         bySettingBtn.classList.remove("is-dark");
