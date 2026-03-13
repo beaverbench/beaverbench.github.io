@@ -1,0 +1,577 @@
+[
+    {
+        "question": "For each subject code where the department is degree granting and the department is Mathematics, show the subject code, subject code description, department name, school name, and the average department budget code within each school, along with the subject title, total units, dense rank over the department code ordered by department code, and the number of subjects offered by the department, for each subject offered by the Mathematics department, ordered by department name and dense rank. Do not return any rounded answers.",
+        "db_id": "dw",
+        "sql": "WITH inner_cte AS ( SELECT t1.SUBJECT_CODE, t1.SUBJECT_CODE_DESC, t0.DEPARTMENT_NAME, t1.SCHOOL_NAME, AVG(t0.DEPT_BUDGET_CODE) OVER (PARTITION BY t1.SCHOOL_NAME ORDER BY t0.DEPARTMENT_NAME) AS avg_dept_budget_code FROM SIS_DEPARTMENT t0 JOIN SIS_SUBJECT_CODE t1 ON t0.SCHOOL_CODE = t1.SCHOOL_CODE WHERE t0.IS_DEGREE_GRANTING = 'Y' AND t0.DEPARTMENT_NAME = 'Mathematics' ORDER BY t0.DEPARTMENT_NAME ) SELECT icte.SUBJECT_CODE, icte.SUBJECT_CODE_DESC, icte.DEPARTMENT_NAME, icte.SCHOOL_NAME, icte.avg_dept_budget_code, sos.SUBJECT_TITLE, sos.TOTAL_UNITS, DENSE_RANK() OVER (PARTITION BY d.DEPARTMENT_CODE ORDER BY d.DEPARTMENT_CODE) AS window_column, dept_subject_counts.subject_count FROM inner_cte icte JOIN SIS_DEPARTMENT d ON icte.DEPARTMENT_NAME = d.DEPARTMENT_NAME AND icte.SCHOOL_NAME = d.SCHOOL_NAME JOIN SIS_SUBJECT_CODE sc ON d.DEPARTMENT_CODE = sc.DEPARTMENT_CODE JOIN SUBJECT_OFFERED_SUMMARY sos ON sc.DEPARTMENT_CODE = sos.OFFER_DEPT_CODE JOIN ( SELECT d2.DEPARTMENT_CODE, COUNT(sos2.SUBJECT_OFFERED_SUMMARY_KEY) AS subject_count FROM SIS_DEPARTMENT d2 JOIN SUBJECT_OFFERED_SUMMARY sos2 ON d2.DEPARTMENT_CODE = sos2.OFFER_DEPT_CODE WHERE d2.IS_DEGREE_GRANTING = 'Y' AND d2.DEPARTMENT_NAME = 'Mathematics' GROUP BY d2.DEPARTMENT_CODE ) dept_subject_counts ON d.DEPARTMENT_CODE = dept_subject_counts.DEPARTMENT_CODE WHERE d.IS_DEGREE_GRANTING = 'Y' AND d.DEPARTMENT_NAME = 'Mathematics' ORDER BY icte.DEPARTMENT_NAME, window_column",
+        "gold_tables": [
+            "SIS_DEPARTMENT",
+            "SIS_SUBJECT_CODE",
+            "SUBJECT_OFFERED_SUMMARY"
+        ],
+        "mapping": {
+            "subject code": [
+                "SIS_SUBJECT_CODE.SUBJECT_CODE"
+            ],
+            "subject code description": [
+                "SIS_SUBJECT_CODE.SUBJECT_CODE_DESC"
+            ],
+            "department name": [
+                "SIS_DEPARTMENT.DEPARTMENT_NAME"
+            ],
+            "school name": [
+                "SIS_SUBJECT_CODE.SCHOOL_NAME"
+            ],
+            "average department budget code": [
+                "SIS_DEPARTMENT.DEPT_BUDGET_CODE"
+            ],
+            "subject title": [
+                "SUBJECT_OFFERED_SUMMARY.SUBJECT_TITLE"
+            ],
+            "total units": [
+                "SUBJECT_OFFERED_SUMMARY.TOTAL_UNITS"
+            ],
+            "dense rank over the department code": [
+                "SIS_DEPARTMENT.DEPARTMENT_CODE"
+            ],
+            "number of subjects offered by the department": [
+                "SUBJECT_OFFERED_SUMMARY.SUBJECT_OFFERED_SUMMARY_KEY",
+                "SIS_DEPARTMENT.DEPARTMENT_CODE"
+            ],
+            "degree granting": [
+                "SIS_DEPARTMENT.IS_DEGREE_GRANTING"
+            ],
+            "Mathematics": [
+                "SIS_DEPARTMENT.DEPARTMENT_NAME"
+            ]
+        },
+        "join_keys": [
+            [
+                "SIS_DEPARTMENT.SCHOOL_CODE",
+                "SIS_SUBJECT_CODE.SCHOOL_CODE"
+            ],
+            [
+                "SIS_DEPARTMENT.DEPARTMENT_CODE",
+                "SIS_SUBJECT_CODE.DEPARTMENT_CODE"
+            ],
+            [
+                "SIS_DEPARTMENT.DEPARTMENT_CODE",
+                "SUBJECT_OFFERED_SUMMARY.OFFER_DEPT_CODE"
+            ]
+        ],
+        "internal_evidence": [
+            "\"math\" is predicated by \"TABLE.DEPARTMENT_NAME = 'Mathematics'\""
+        ],
+        "external_evidence": [
+            "\"Course 18\" is predicated by \"TABLE.DEPARTMENT_NAME = 'Mathematics'\""
+        ],
+        "subquery_gold_questions": [
+            "For each subject code where the department is degree granting and the department is Mathematics, show the subject code, subject code description, department name, school name, and the average department budget code within each school, ordered by department name.",
+            "List the subject title, total units, department name, and school name for each subject offered, along with dense ranks over the department code ordered by department code, for subjects offered by departments that are degree granting, have a non-null subject code description, and are in the Mathematics department (Course 18).",
+            "For each subject code where the department is degree granting and the department is Mathematics, show the subject code, subject code description, department name, school name, and the average department budget code within each school, along with the subject title, total units, and dense rank over the department code ordered by department code for each subject offered by the Mathematics department, ordered by department name and dense rank."
+        ],
+        "subquery_gold_queries": [
+            "SELECT t1.SUBJECT_CODE, t1.SUBJECT_CODE_DESC, t0.DEPARTMENT_NAME, t1.SCHOOL_NAME, AVG(t0.DEPT_BUDGET_CODE) OVER (PARTITION BY t1.SCHOOL_NAME ORDER BY t0.DEPARTMENT_NAME) AS avg_dept_budget_code FROM SIS_DEPARTMENT t0 JOIN SIS_SUBJECT_CODE t1 ON t0.SCHOOL_CODE = t1.SCHOOL_CODE WHERE t0.IS_DEGREE_GRANTING = 'Y' AND t0.DEPARTMENT_NAME = 'Mathematics' ORDER BY t0.DEPARTMENT_NAME",
+            "SELECT s.SUBJECT_TITLE, s.TOTAL_UNITS, d.DEPARTMENT_NAME, d.SCHOOL_NAME, DENSE_RANK() OVER (PARTITION BY d.DEPARTMENT_CODE ORDER BY d.DEPARTMENT_CODE) AS window_column FROM SUBJECT_OFFERED_SUMMARY s JOIN SIS_DEPARTMENT d ON d.DEPARTMENT_CODE = s.OFFER_DEPT_CODE JOIN SIS_SUBJECT_CODE sc ON sc.DEPARTMENT_CODE = d.DEPARTMENT_CODE WHERE d.IS_DEGREE_GRANTING = 'Y' AND sc.SUBJECT_CODE_DESC IS NOT NULL AND d.DEPARTMENT_NAME = 'Mathematics'",
+            "WITH Subquery1 AS ( SELECT t1.SUBJECT_CODE, t1.SUBJECT_CODE_DESC, t0.DEPARTMENT_NAME, t1.SCHOOL_NAME, AVG(t0.DEPT_BUDGET_CODE) OVER (PARTITION BY t1.SCHOOL_NAME ORDER BY t0.DEPARTMENT_NAME) AS avg_dept_budget_code FROM SIS_DEPARTMENT t0 JOIN SIS_SUBJECT_CODE t1 ON t0.SCHOOL_CODE = t1.SCHOOL_CODE WHERE t0.IS_DEGREE_GRANTING = 'Y' AND t0.DEPARTMENT_NAME = 'Mathematics' ORDER BY t0.DEPARTMENT_NAME ), Subquery2 AS ( SELECT s.SUBJECT_TITLE, s.TOTAL_UNITS, d.DEPARTMENT_NAME, d.SCHOOL_NAME, DENSE_RANK() OVER (PARTITION BY d.DEPARTMENT_CODE ORDER BY d.DEPARTMENT_CODE) AS window_column, d.DEPARTMENT_CODE FROM SUBJECT_OFFERED_SUMMARY s JOIN SIS_DEPARTMENT d ON d.DEPARTMENT_CODE = s.OFFER_DEPT_CODE JOIN SIS_SUBJECT_CODE sc ON sc.DEPARTMENT_CODE = d.DEPARTMENT_CODE WHERE d.IS_DEGREE_GRANTING = 'Y' AND sc.SUBJECT_CODE_DESC IS NOT NULL AND d.DEPARTMENT_NAME = 'Mathematics' ) SELECT sq1.SUBJECT_CODE, sq1.SUBJECT_CODE_DESC, sq1.DEPARTMENT_NAME, sq1.SCHOOL_NAME, sq1.avg_dept_budget_code, sq2.SUBJECT_TITLE, sq2.TOTAL_UNITS, sq2.window_column FROM Subquery1 sq1 JOIN SIS_DEPARTMENT d ON sq1.DEPARTMENT_NAME = d.DEPARTMENT_NAME AND sq1.SCHOOL_NAME = d.SCHOOL_NAME JOIN Subquery2 sq2 ON d.DEPARTMENT_CODE = sq2.DEPARTMENT_CODE ORDER BY sq1.DEPARTMENT_NAME, sq2.window_column"
+        ],
+        "source_file": "filtered_tree_chain_with_domain.json",
+        "top_k_tables": [
+            "SIS_DEPARTMENT",
+            "SIS_SUBJECT_CODE",
+            "TIP_SUBJECT_OFFERED",
+            "COURSE_CATALOG_SUBJECT_OFFERED",
+            "LIBRARY_SUBJECT_OFFERED",
+            "SUBJECT_OFFERED",
+            "SUBJECT_OFFERED_SUMMARY",
+            "CIS_COURSE_CATALOG",
+            "SUBJECT_SUMMARY",
+            "SUBJECT_ENROLLABLE",
+            "DRUPAL_COURSE_CATALOG",
+            "SUBJECT_SELECTOR",
+            "SUBJECT_GROUPING",
+            "SIS_COURSE_DESCRIPTION",
+            "STUDENT_DEPARTMENT"
+        ]
+    },
+    {
+        "question": "For each department, provide the department name, the average, range, and variance of the number of supervisees for all space units associated with that department, and also include the total square footage and the total research volume for each department. Do not return any rounded answers.",
+        "db_id": "dw",
+        "sql": "WITH inner_cte AS ( SELECT SPACE_UNIT.SPACE_UNIT AS department_name, AVG(SPACE_SUPERVISOR_USAGE.NUM_OF_SUPERVISEES) AS avg_supervisees, MAX(SPACE_SUPERVISOR_USAGE.NUM_OF_SUPERVISEES) - MIN(SPACE_SUPERVISOR_USAGE.NUM_OF_SUPERVISEES) AS supervisee_range, VARIANCE(SPACE_SUPERVISOR_USAGE.NUM_OF_SUPERVISEES) AS supervisee_variance FROM SPACE_SUPERVISOR_USAGE JOIN SPACE_UNIT ON SPACE_SUPERVISOR_USAGE.DEPT_NAMES = SPACE_UNIT.DLC_KEY GROUP BY SPACE_UNIT.SPACE_UNIT ) SELECT inner_cte.department_name, inner_cte.avg_supervisees, inner_cte.supervisee_range, inner_cte.supervisee_variance, SUM(SSU.SQFT) AS total_sqft, SUM(SSU.RESEARCH_VOLUME) AS total_research_volume FROM inner_cte JOIN SPACE_UNIT SU ON inner_cte.department_name = SU.SPACE_UNIT JOIN SPACE_SUPERVISOR_USAGE SSU ON SU.DLC_KEY = SSU.DEPT_NAMES GROUP BY inner_cte.department_name, inner_cte.avg_supervisees, inner_cte.supervisee_range, inner_cte.supervisee_variance ORDER BY inner_cte.supervisee_range DESC;",
+        "gold_tables": [
+            "SPACE_SUPERVISOR_USAGE",
+            "SPACE_UNIT"
+        ],
+        "mapping": {
+            "department": [
+                "SPACE_UNIT.SPACE_UNIT"
+            ],
+            "department name": [
+                "SPACE_UNIT.SPACE_UNIT"
+            ],
+            "average of the number of supervisees": [
+                "SPACE_SUPERVISOR_USAGE.NUM_OF_SUPERVISEES"
+            ],
+            "range of the number of supervisees": [
+                "SPACE_SUPERVISOR_USAGE.NUM_OF_SUPERVISEES"
+            ],
+            "variance of the number of supervisees": [
+                "SPACE_SUPERVISOR_USAGE.NUM_OF_SUPERVISEES"
+            ],
+            "total square footage": [
+                "SPACE_SUPERVISOR_USAGE.SQFT"
+            ],
+            "total research volume": [
+                "SPACE_SUPERVISOR_USAGE.RESEARCH_VOLUME"
+            ],
+            "space units associated with that department": [
+                "SPACE_UNIT.DLC_KEY",
+                "SPACE_SUPERVISOR_USAGE.DEPT_NAMES"
+            ]
+        },
+        "join_keys": [
+            [
+                "SPACE_SUPERVISOR_USAGE.DEPT_NAMES",
+                "SPACE_UNIT.DLC_KEY"
+            ]
+        ],
+        "internal_evidence": [],
+        "external_evidence": [],
+        "subquery_gold_questions": [
+            "For each department, provide the department name and calculate the average, range, and variance of the number of supervisees for all space units associated with that department."
+        ],
+        "subquery_gold_queries": [
+            "SELECT SPACE_UNIT.SPACE_UNIT AS department_name, AVG(SPACE_SUPERVISOR_USAGE.NUM_OF_SUPERVISEES) AS avg_supervisees, MAX(SPACE_SUPERVISOR_USAGE.NUM_OF_SUPERVISEES) - MIN(SPACE_SUPERVISOR_USAGE.NUM_OF_SUPERVISEES) AS supervisee_range, VARIANCE(SPACE_SUPERVISOR_USAGE.NUM_OF_SUPERVISEES) AS supervisee_variance FROM SPACE_SUPERVISOR_USAGE JOIN SPACE_UNIT ON SPACE_SUPERVISOR_USAGE.DEPT_NAMES = SPACE_UNIT.DLC_KEY GROUP BY SPACE_UNIT.SPACE_UNIT ORDER BY supervisee_range DESC;"
+        ],
+        "source_file": "filtered_chain_without_domain.json",
+        "top_k_tables": [
+            "SPACE_SUPERVISOR_USAGE",
+            "SPACE_UNIT2",
+            "SIS_DEPARTMENT",
+            "SPACE_UNIT",
+            "MASTER_DEPT_HIERARCHY",
+            "SPACE_DETAIL",
+            "FCLT_ROOMS",
+            "ZPM_ROOMS_LOAD",
+            "HR_ORG_UNIT",
+            "FAC_ORGANIZATION",
+            "HR_ORG_UNIT_NEW",
+            "EMPLOYEE_DIRECTORY",
+            "FCLT_ORGANIZATION",
+            "STUDENT_DEPARTMENT",
+            "SPACE_USAGE"
+        ]
+    },
+    {
+        "question": "For subjects offered in the term '2014FA' by the Chemistry department, show the subject title from the library, the number of enrolled students in the library subject, the responsible faculty name from the TIP subject, the offer department name from the TIP subject, the minimum number of enrolled students in the library subject within a window of 3 preceding and 1 following row ordered by the TIP subject's responsible faculty MIT ID, and also include the total number of Chemistry subjects offered in '2014FA'. Additionally, for each academic year, show the department name, the academic year description, the variance and standard deviation (using STDDEV only and never STDDEV_POP) of the maximum enrollment for IAP activities offered in that year by the Mathematics department (considering only activities that require advance sign-up and are not cancelled), and for each department, include a grand total for all activities in the format of (department name, null, total variance and stddev). Present all these columns in the following order: subject title, number of enrolled students, responsible faculty name, offer department name, windowed minimum number of enrolled students, total Chemistry subjects in '2014FA', department name, academic year description, total variance, and total standard deviation (using STDDEV only and never STDDEV_POP). Do not return any rounded answers.",
+        "db_id": "dw",
+        "sql": "WITH inner_cte1 AS ( SELECT l.SUBJECT_TITLE, l.NUM_ENROLLED_STUDENTS, t.RESPONSIBLE_FACULTY_NAME, t.OFFER_DEPT_NAME, MIN(l.NUM_ENROLLED_STUDENTS) OVER ( ORDER BY t.RESPONSIBLE_FACULTY_MIT_ID ROWS BETWEEN 3 PRECEDING AND 1 FOLLOWING ) AS window_column, l.TERM_CODE FROM LIBRARY_SUBJECT_OFFERED l JOIN TIP_SUBJECT_OFFERED t ON l.TERM_CODE = t.TERM_CODE WHERE l.TERM_CODE = '2014FA' AND t.OFFER_DEPT_NAME = 'Chemistry' ), Total_Chemistry AS ( SELECT COUNT(*) AS Total_Chemistry_Subjects, TERM_CODE FROM TIP_SUBJECT_OFFERED WHERE TERM_CODE = '2014FA' AND OFFER_DEPT_NAME = 'Chemistry' GROUP BY TERM_CODE ), inner_cte2 AS ( SELECT ata.ACADEMIC_YEAR, ata.ACADEMIC_YEAR_DESC, VARIANCE(isd.MAX_ENROLLMENT) AS max_enrollment_variance, STDDEV(isd.MAX_ENROLLMENT) AS max_enrollment_stddev, ccso.DEPARTMENT_NAME FROM IAP_SUBJECT_DETAIL isd JOIN ACADEMIC_TERMS_ALL ata ON isd.TERM_CODE = ata.TERM_CODE JOIN COURSE_CATALOG_SUBJECT_OFFERED ccso ON ata.TERM_CODE = ccso.TERM_CODE WHERE isd.ENROLLMENT_TYPE = 'Advance sign-up required' AND isd.IS_CANCELLED = 'N' AND isd.MAX_ENROLLMENT IS NOT NULL AND ccso.DEPARTMENT_NAME = 'Mathematics' GROUP BY ata.ACADEMIC_YEAR, ata.ACADEMIC_YEAR_DESC, ccso.DEPARTMENT_NAME ), RollupResults AS ( SELECT DEPARTMENT_NAME, ACADEMIC_YEAR_DESC, SUM(max_enrollment_variance) AS total_variance, SUM(max_enrollment_stddev) AS total_stddev FROM inner_cte2 GROUP BY DEPARTMENT_NAME, ACADEMIC_YEAR_DESC WITH ROLLUP HAVING SUM(max_enrollment_variance) IS NOT NULL ) SELECT ic1.SUBJECT_TITLE, ic1.NUM_ENROLLED_STUDENTS, ic1.RESPONSIBLE_FACULTY_NAME, ic1.OFFER_DEPT_NAME, ic1.window_column, tc.Total_Chemistry_Subjects, rr.DEPARTMENT_NAME, rr.ACADEMIC_YEAR_DESC, rr.total_variance, rr.total_stddev FROM inner_cte1 ic1 JOIN Total_Chemistry tc ON ic1.TERM_CODE = tc.TERM_CODE JOIN ACADEMIC_TERMS_ALL ata ON ic1.TERM_CODE = ata.TERM_CODE JOIN RollupResults rr ON rr.DEPARTMENT_NAME = 'Mathematics' ORDER BY ic1.SUBJECT_TITLE, rr.ACADEMIC_YEAR_DESC ;",
+        "gold_tables": [
+            "LIBRARY_SUBJECT_OFFERED",
+            "TIP_SUBJECT_OFFERED",
+            "IAP_SUBJECT_DETAIL",
+            "ACADEMIC_TERMS_ALL",
+            "COURSE_CATALOG_SUBJECT_OFFERED"
+        ],
+        "mapping": {
+            "subjects offered in the term '2014FA'": [
+                "LIBRARY_SUBJECT_OFFERED.TERM_CODE",
+                "TIP_SUBJECT_OFFERED.TERM_CODE"
+            ],
+            "Chemistry department": [
+                "TIP_SUBJECT_OFFERED.OFFER_DEPT_NAME"
+            ],
+            "subject title from the library": [
+                "LIBRARY_SUBJECT_OFFERED.SUBJECT_TITLE"
+            ],
+            "number of enrolled students in the library subject": [
+                "LIBRARY_SUBJECT_OFFERED.NUM_ENROLLED_STUDENTS"
+            ],
+            "responsible faculty name from the TIP subject": [
+                "TIP_SUBJECT_OFFERED.RESPONSIBLE_FACULTY_NAME"
+            ],
+            "offer department name from the TIP subject": [
+                "TIP_SUBJECT_OFFERED.OFFER_DEPT_NAME"
+            ],
+            "window of 3 preceding and 1 following row ordered by the TIP subject's responsible faculty MIT ID": [
+                "TIP_SUBJECT_OFFERED.RESPONSIBLE_FACULTY_MIT_ID"
+            ],
+            "minimum number of enrolled students in the library subject within window": [
+                "LIBRARY_SUBJECT_OFFERED.NUM_ENROLLED_STUDENTS"
+            ],
+            "total number of Chemistry subjects offered in '2014FA'": [
+                "TIP_SUBJECT_OFFERED.OFFER_DEPT_NAME",
+                "TIP_SUBJECT_OFFERED.TERM_CODE"
+            ],
+            "academic year": [
+                "ACADEMIC_TERMS_ALL.ACADEMIC_YEAR"
+            ],
+            "department name": [
+                "COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_NAME"
+            ],
+            "academic year description": [
+                "ACADEMIC_TERMS_ALL.ACADEMIC_YEAR_DESC"
+            ],
+            "maximum enrollment for IAP activities": [
+                "IAP_SUBJECT_DETAIL.MAX_ENROLLMENT"
+            ],
+            "IAP activities": [
+                "IAP_SUBJECT_DETAIL.MAX_ENROLLMENT"
+            ],
+            "Mathematics department": [
+                "COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_NAME"
+            ],
+            "advance sign-up required": [
+                "IAP_SUBJECT_DETAIL.ENROLLMENT_TYPE"
+            ],
+            "not cancelled": [
+                "IAP_SUBJECT_DETAIL.IS_CANCELLED"
+            ]
+        },
+        "join_keys": [
+            [
+                "LIBRARY_SUBJECT_OFFERED.TERM_CODE",
+                "TIP_SUBJECT_OFFERED.TERM_CODE"
+            ],
+            [
+                "ACADEMIC_TERMS_ALL.TERM_CODE",
+                "IAP_SUBJECT_DETAIL.TERM_CODE"
+            ],
+            [
+                "ACADEMIC_TERMS_ALL.TERM_CODE",
+                "COURSE_CATALOG_SUBJECT_OFFERED.TERM_CODE"
+            ]
+        ],
+        "internal_evidence": [
+            "\"Chemistry\" is predicated by \"TABLE.OFFER_DEPT_NAME = 'Chemistry'\"",
+            "\"math\" is predicated by \"TABLE.DEPARTMENT_NAME = 'Mathematics'\""
+        ],
+        "external_evidence": [
+            "\"Course 5\" is predicated by \"TABLE.OFFER_DEPT_NAME = 'Chemistry'\"",
+            "\"Course 18\" is predicated by \"TABLE.DEPARTMENT_NAME = 'Mathematics'\""
+        ],
+        "subquery_gold_questions": [
+            "For subjects offered in the term '2014FA' by the Chemistry department, show the subject title from the library, the number of enrolled students in the library subject, the responsible faculty name from the TIP subject, the offer department name from the TIP subject, and the minimum number of enrolled students in the library subject within a window of 3 preceding and 1 following row ordered by the TIP subject's responsible faculty MIT ID, but only include subjects where the offer department name is 'Chemistry'.",
+            "For each academic year, what is the variance and standard deviation of the maximum enrollment for IAP activities offered in that year by the Mathematics department, considering only activities that require advance sign-up and are not cancelled? Also, provide the academic year description.",
+            "For subjects offered in the term '2014FA' by the Chemistry department, show the subject title from the library, the number of enrolled students in the library subject, the responsible faculty name from the TIP subject, the offer department name from the TIP subject, the minimum number of enrolled students in the library subject within a window of 3 preceding and 1 following row ordered by the TIP subject's responsible faculty MIT ID, and also include the total number of Chemistry subjects offered in '2014FA'.",
+            "For each academic year, what is the variance and standard deviation of the maximum enrollment for IAP activities offered in that year by the Mathematics department, considering only activities that require advance sign-up and are not cancelled? Also, provide the academic year description, and for each department, include a grand total for all activities in the format of (department name, null, total variance and stddev)."
+        ],
+        "subquery_gold_queries": [
+            "SELECT l.SUBJECT_TITLE, l.NUM_ENROLLED_STUDENTS, t.RESPONSIBLE_FACULTY_NAME, t.OFFER_DEPT_NAME, MIN(l.NUM_ENROLLED_STUDENTS) OVER (ORDER BY t.RESPONSIBLE_FACULTY_MIT_ID ROWS BETWEEN 3 PRECEDING AND 1 FOLLOWING) AS window_column FROM LIBRARY_SUBJECT_OFFERED l JOIN TIP_SUBJECT_OFFERED t ON l.TERM_CODE = t.TERM_CODE WHERE l.TERM_CODE = '2014FA' AND t.OFFER_DEPT_NAME = 'Chemistry'",
+            "SELECT ata.ACADEMIC_YEAR, ata.ACADEMIC_YEAR_DESC, VARIANCE(isd.MAX_ENROLLMENT) AS max_enrollment_variance, STDDEV(isd.MAX_ENROLLMENT) AS max_enrollment_stddev FROM IAP_SUBJECT_DETAIL isd JOIN ACADEMIC_TERMS_ALL ata ON isd.TERM_CODE = ata.TERM_CODE JOIN COURSE_CATALOG_SUBJECT_OFFERED ccso ON ata.TERM_CODE = ccso.TERM_CODE WHERE isd.ENROLLMENT_TYPE = 'Advance sign-up required' AND isd.IS_CANCELLED = 'N' AND isd.MAX_ENROLLMENT IS NOT NULL AND ccso.DEPARTMENT_NAME = 'Mathematics' GROUP BY ata.ACADEMIC_YEAR, ata.ACADEMIC_YEAR_DESC ORDER BY max_enrollment_variance DESC;",
+            "WITH inner_cte AS ( SELECT l.SUBJECT_TITLE, l.NUM_ENROLLED_STUDENTS, t.RESPONSIBLE_FACULTY_NAME, t.OFFER_DEPT_NAME, MIN(l.NUM_ENROLLED_STUDENTS) OVER (ORDER BY t.RESPONSIBLE_FACULTY_MIT_ID ROWS BETWEEN 3 PRECEDING AND 1 FOLLOWING) AS window_column FROM LIBRARY_SUBJECT_OFFERED l JOIN TIP_SUBJECT_OFFERED t ON l.TERM_CODE = t.TERM_CODE WHERE l.TERM_CODE = '2014FA' AND t.OFFER_DEPT_NAME = 'Chemistry' ) SELECT inner_cte.SUBJECT_TITLE, inner_cte.NUM_ENROLLED_STUDENTS, inner_cte.RESPONSIBLE_FACULTY_NAME, inner_cte.OFFER_DEPT_NAME, inner_cte.window_column, Total_Chemistry.Total_Chemistry_Subjects FROM inner_cte JOIN ( SELECT COUNT(*) AS Total_Chemistry_Subjects FROM TIP_SUBJECT_OFFERED WHERE TERM_CODE = '2014FA' AND OFFER_DEPT_NAME = 'Chemistry' ) AS Total_Chemistry ON 1=1;",
+            "WITH inner_cte AS ( SELECT ata.ACADEMIC_YEAR, ata.ACADEMIC_YEAR_DESC, VARIANCE(isd.MAX_ENROLLMENT) AS max_enrollment_variance, STDDEV(isd.MAX_ENROLLMENT) AS max_enrollment_stddev, ccso.DEPARTMENT_NAME FROM IAP_SUBJECT_DETAIL isd JOIN ACADEMIC_TERMS_ALL ata ON isd.TERM_CODE = ata.TERM_CODE JOIN COURSE_CATALOG_SUBJECT_OFFERED ccso ON ata.TERM_CODE = ccso.TERM_CODE WHERE isd.ENROLLMENT_TYPE = 'Advance sign-up required' AND isd.IS_CANCELLED = 'N' AND isd.MAX_ENROLLMENT IS NOT NULL AND ccso.DEPARTMENT_NAME = 'Mathematics' GROUP BY ata.ACADEMIC_YEAR, ata.ACADEMIC_YEAR_DESC, ccso.DEPARTMENT_NAME ) , RollupResults AS ( SELECT DEPARTMENT_NAME, ACADEMIC_YEAR_DESC, SUM(max_enrollment_variance) AS total_variance, SUM(max_enrollment_stddev) AS total_stddev FROM inner_cte GROUP BY DEPARTMENT_NAME, ACADEMIC_YEAR_DESC WITH ROLLUP HAVING SUM(max_enrollment_variance) IS NOT NULL ) SELECT rr.DEPARTMENT_NAME, rr.ACADEMIC_YEAR_DESC, rr.total_variance, rr.total_stddev FROM RollupResults rr ORDER BY rr.DEPARTMENT_NAME, rr.ACADEMIC_YEAR_DESC ;"
+        ],
+        "source_file": "filtered_chain_tree_with_domain.json",
+        "top_k_tables": [
+            "LIBRARY_SUBJECT_OFFERED",
+            "TIP_SUBJECT_OFFERED",
+            "SUBJECT_OFFERED",
+            "SUBJECT_OFFERED_SUMMARY",
+            "IAP_SUBJECT_DETAIL",
+            "SUBJECT_SUMMARY",
+            "SUBJECT_ENROLLABLE",
+            "COURSE_CATALOG_SUBJECT_OFFERED",
+            "CIS_COURSE_CATALOG",
+            "DRUPAL_COURSE_CATALOG",
+            "LIBRARY_COURSE_INSTRUCTOR",
+            "ACADEMIC_TERMS",
+            "SUBJECT_IAP_SCHEDULE",
+            "SUBJECT_SELECTOR",
+            "SIS_COURSE_DESCRIPTION"
+        ]
+    },
+    {
+        "question": "For the Physics department (Course 8), considering only departments that have more than 10 subjects offered in the 2022FA term, what is the department name, the standard deviation (using STDDEV only and never STDDEV_POP) of the number of students enrolled in its offered subjects, the average area, variance, and standard deviation (using STDDEV only and never STDDEV_POP) of the area of rooms used for subjects offered by that department, considering only rooms with an area greater than 100? Do not return any rounded answers.",
+        "db_id": "dw",
+        "sql": "WITH inner_cte AS ( SELECT d.DEPARTMENT_NAME, STDDEV(t.NUM_ENROLLED_STUDENTS) AS enrolled_stddev FROM SIS_DEPARTMENT d JOIN TIP_SUBJECT_OFFERED t ON d.DEPARTMENT_CODE = t.OFFER_DEPT_CODE JOIN COURSE_CATALOG_SUBJECT_OFFERED c ON d.DEPARTMENT_CODE = c.DEPARTMENT_CODE WHERE c.TERM_CODE = '2022FA' AND d.DEPARTMENT_NAME = 'Physics' AND d.DEPARTMENT_CODE = '8' GROUP BY d.DEPARTMENT_NAME HAVING COUNT(*) > 10 ORDER BY enrolled_stddev DESC ) , RoomAreaStats AS ( SELECT c.DEPARTMENT_NAME, AVG(f.AREA) AS avg_area, VARIANCE(f.AREA) AS area_variance, STDDEV(f.AREA) AS area_stddev FROM FCLT_ROOMS f JOIN COURSE_CATALOG_SUBJECT_OFFERED c ON f.FCLT_ROOM_KEY = c.MEET_PLACE WHERE f.AREA > 100 AND c.DEPARTMENT_NAME = 'Physics' GROUP BY c.DEPARTMENT_NAME ORDER BY area_variance DESC ) SELECT i.DEPARTMENT_NAME, i.enrolled_stddev, r.avg_area, r.area_variance, r.area_stddev FROM inner_cte i JOIN RoomAreaStats r ON i.DEPARTMENT_NAME = r.DEPARTMENT_NAME;",
+        "gold_tables": [
+            "TIP_SUBJECT_OFFERED",
+            "SIS_DEPARTMENT",
+            "COURSE_CATALOG_SUBJECT_OFFERED",
+            "FCLT_ROOMS"
+        ],
+        "mapping": {
+            "Physics department": [
+                "SIS_DEPARTMENT.DEPARTMENT_NAME",
+                "SIS_DEPARTMENT.DEPARTMENT_CODE"
+            ],
+            "departments that have more than 10 subjects offered": [
+                "COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_CODE"
+            ],
+            "2022FA term": [
+                "COURSE_CATALOG_SUBJECT_OFFERED.TERM_CODE"
+            ],
+            "department name": [
+                "SIS_DEPARTMENT.DEPARTMENT_NAME"
+            ],
+            "standard deviation of the number of students enrolled": [
+                "TIP_SUBJECT_OFFERED.NUM_ENROLLED_STUDENTS"
+            ],
+            "average area": [
+                "FCLT_ROOMS.AREA"
+            ],
+            "variance of area": [
+                "FCLT_ROOMS.AREA"
+            ],
+            "standard deviation of area": [
+                "FCLT_ROOMS.AREA"
+            ],
+            "rooms with area greater than 100": [
+                "FCLT_ROOMS.AREA"
+            ]
+        },
+        "join_keys": [
+            [
+                "SIS_DEPARTMENT.DEPARTMENT_CODE",
+                "TIP_SUBJECT_OFFERED.OFFER_DEPT_CODE"
+            ],
+            [
+                "COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_CODE",
+                "SIS_DEPARTMENT.DEPARTMENT_CODE"
+            ],
+            [
+                "COURSE_CATALOG_SUBJECT_OFFERED.MEET_PLACE",
+                "FCLT_ROOMS.FCLT_ROOM_KEY"
+            ]
+        ],
+        "internal_evidence": [
+            "\"math\" is predicated by \"TABLE.DEPARTMENT_NAME = 'Mathematics'\""
+        ],
+        "external_evidence": [
+            "\"Course 18\" is predicated by \"TABLE.DEPARTMENT_CODE = '18'\"",
+            "\"Course 18\" is predicated by \"TABLE.DEPARTMENT_NAME = 'Mathematics'\""
+        ],
+        "subquery_gold_questions": [
+            "For each department, what is the department name and the standard deviation of the number of students enrolled in its offered subjects, considering only departments that have more than 5 subjects offered in the 2022FA term, and restricting to the Mathematics department (Course 18)?",
+            "For each department, what are the average, variance, and standard deviation of the area of rooms used for subjects offered by that department, considering only rooms with an area greater than 40 and only for the Mathematics department (Course 18)?",
+            "For the Mathematics department (Course 18), considering only departments that have more than 5 subjects offered in the 2022FA term, what is the department name, the standard deviation of the number of students enrolled in its offered subjects, the average area, variance, and standard deviation of the area of rooms used for subjects offered by that department, considering only rooms with an area greater than 40?"
+        ],
+        "subquery_gold_queries": [
+            "SELECT d.DEPARTMENT_NAME, STDDEV(t.NUM_ENROLLED_STUDENTS) AS enrolled_stddev FROM SIS_DEPARTMENT d JOIN TIP_SUBJECT_OFFERED t ON d.DEPARTMENT_CODE = t.OFFER_DEPT_CODE JOIN COURSE_CATALOG_SUBJECT_OFFERED c ON d.DEPARTMENT_CODE = c.DEPARTMENT_CODE WHERE c.TERM_CODE = '2022FA' AND d.DEPARTMENT_NAME = 'Mathematics' AND d.DEPARTMENT_CODE = '18' GROUP BY d.DEPARTMENT_NAME HAVING COUNT(*) > 5 ORDER BY enrolled_stddev DESC;",
+            "SELECT c.DEPARTMENT_NAME, AVG(f.AREA) AS avg_area, VARIANCE(f.AREA) AS area_variance, STDDEV(f.AREA) AS area_stddev FROM FCLT_ROOMS f JOIN COURSE_CATALOG_SUBJECT_OFFERED c ON f.FCLT_ROOM_KEY = c.MEET_PLACE WHERE f.AREA > 40 AND c.DEPARTMENT_NAME = 'Mathematics' GROUP BY c.DEPARTMENT_NAME ORDER BY area_variance DESC;",
+            "WITH EnrolledStddev AS ( SELECT d.DEPARTMENT_NAME, STDDEV(t.NUM_ENROLLED_STUDENTS) AS enrolled_stddev FROM SIS_DEPARTMENT d JOIN TIP_SUBJECT_OFFERED t ON d.DEPARTMENT_CODE = t.OFFER_DEPT_CODE JOIN COURSE_CATALOG_SUBJECT_OFFERED c ON d.DEPARTMENT_CODE = c.DEPARTMENT_CODE WHERE c.TERM_CODE = '2022FA' AND d.DEPARTMENT_NAME = 'Mathematics' AND d.DEPARTMENT_CODE = '18' GROUP BY d.DEPARTMENT_NAME HAVING COUNT(*) > 5 ORDER BY enrolled_stddev DESC ), RoomAreaStats AS ( SELECT c.DEPARTMENT_NAME, AVG(f.AREA) AS avg_area, VARIANCE(f.AREA) AS area_variance, STDDEV(f.AREA) AS area_stddev FROM FCLT_ROOMS f JOIN COURSE_CATALOG_SUBJECT_OFFERED c ON f.FCLT_ROOM_KEY = c.MEET_PLACE WHERE f.AREA > 40 AND c.DEPARTMENT_NAME = 'Mathematics' GROUP BY c.DEPARTMENT_NAME ORDER BY area_variance DESC ) SELECT e.DEPARTMENT_NAME, e.enrolled_stddev, r.avg_area, r.area_variance, r.area_stddev FROM EnrolledStddev e JOIN RoomAreaStats r ON e.DEPARTMENT_NAME = r.DEPARTMENT_NAME;"
+        ],
+        "source_file": "filtered_tree_chain_with_domain.json",
+        "top_k_tables": [
+            "LIBRARY_SUBJECT_OFFERED",
+            "TIP_SUBJECT_OFFERED",
+            "SUBJECT_SELECTOR",
+            "SIS_DEPARTMENT",
+            "SUBJECT_OFFERED",
+            "SUBJECT_SUMMARY",
+            "SUBJECT_OFFERED_SUMMARY",
+            "FAC_ROOMS",
+            "SUBJECT_ENROLLABLE",
+            "COURSE_CATALOG_SUBJECT_OFFERED",
+            "STUDENT_DEPARTMENT",
+            "FCLT_ROOMS",
+            "CIS_COURSE_CATALOG",
+            "SIS_SUBJECT_CODE",
+            "DRUPAL_COURSE_CATALOG"
+        ]
+    },
+    {
+        "question": "For subjects offered in the academic year 2024 with a total of 12 units in the Mathematics department (Course 18), show the subject code, subject title, department name, school name, and, for each school, the number of such subjects offered in that school (only including schools where at least 2 such subjects are offered), and also show the variance and standard deviation (using STDDEV only and never STDDEV_POP) of the total units of courses offered by that department (considering only courses with a non-null total units value and only for degree-granting departments), and only include results where the department name and school name match in both sets of criteria. List the columns in the following order: subject code, subject title, department name, school name, subject count, variance of total units, and standard deviation (using STDDEV only and never STDDEV_POP) of total units. Do not return any rounded answers.",
+        "db_id": "dw",
+        "sql": "WITH subq1 AS ( WITH inner_cte AS ( SELECT t1.SUBJECT_CODE, t1.SUBJECT_TITLE, t1.DEPARTMENT_NAME, t0.SCHOOL_NAME FROM SIS_DEPARTMENT t0 JOIN COURSE_CATALOG_SUBJECT_OFFERED t1 ON t0.DEPARTMENT_CODE = t1.DEPARTMENT_CODE WHERE t1.ACADEMIC_YEAR = 2024 AND t1.TOTAL_UNITS = 12 AND t1.DEPARTMENT_NAME = 'Mathematics' ) SELECT ic.SUBJECT_CODE, ic.SUBJECT_TITLE, ic.DEPARTMENT_NAME, ic.SCHOOL_NAME, sc.subject_count FROM inner_cte ic JOIN ( SELECT SCHOOL_NAME, COUNT(*) AS subject_count FROM inner_cte GROUP BY SCHOOL_NAME HAVING COUNT(*) >= 2 ) sc ON ic.SCHOOL_NAME = sc.SCHOOL_NAME ), subq2 AS ( WITH inner_cte AS ( SELECT sd.DEPARTMENT_NAME, VARIANCE(ccc.TOTAL_UNITS) AS variance_total_units, STDDEV(ccc.TOTAL_UNITS) AS stddev_total_units FROM SIS_DEPARTMENT sd JOIN CIS_COURSE_CATALOG ccc ON sd.DEPARTMENT_CODE = ccc.DEPARTMENT_CODE WHERE sd.IS_DEGREE_GRANTING = 'Y' AND ccc.TOTAL_UNITS IS NOT NULL GROUP BY sd.DEPARTMENT_NAME ) SELECT ic.DEPARTMENT_NAME, ic.variance_total_units, ic.stddev_total_units, sd.SCHOOL_NAME FROM inner_cte ic JOIN SIS_DEPARTMENT sd ON ic.DEPARTMENT_NAME = sd.DEPARTMENT_NAME ) SELECT s1.SUBJECT_CODE, s1.SUBJECT_TITLE, s1.DEPARTMENT_NAME, s1.SCHOOL_NAME, s1.subject_count, s2.variance_total_units, s2.stddev_total_units FROM subq1 s1 JOIN subq2 s2 ON s1.DEPARTMENT_NAME = s2.DEPARTMENT_NAME AND s1.SCHOOL_NAME = s2.SCHOOL_NAME ORDER BY s1.SCHOOL_NAME, s1.SUBJECT_CODE;",
+        "gold_tables": [
+            "SIS_DEPARTMENT",
+            "COURSE_CATALOG_SUBJECT_OFFERED",
+            "SIS_COURSE_DESCRIPTION",
+            "CIS_COURSE_CATALOG"
+        ],
+        "mapping": {
+            "subjects offered in the academic year 2024": [
+                "COURSE_CATALOG_SUBJECT_OFFERED.ACADEMIC_YEAR"
+            ],
+            "total of 12 units": [
+                "COURSE_CATALOG_SUBJECT_OFFERED.TOTAL_UNITS"
+            ],
+            "Mathematics department (Course 18)": [
+                "COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_NAME"
+            ],
+            "subject code": [
+                "COURSE_CATALOG_SUBJECT_OFFERED.SUBJECT_CODE"
+            ],
+            "subject title": [
+                "COURSE_CATALOG_SUBJECT_OFFERED.SUBJECT_TITLE"
+            ],
+            "department name": [
+                "COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_NAME",
+                "SIS_DEPARTMENT.DEPARTMENT_NAME"
+            ],
+            "school name": [
+                "SIS_DEPARTMENT.SCHOOL_NAME"
+            ],
+            "number of such subjects offered in that school": [
+                "SIS_DEPARTMENT.SCHOOL_NAME",
+                "COURSE_CATALOG_SUBJECT_OFFERED.SUBJECT_CODE"
+            ],
+            "variance of the total units of courses offered by that department": [
+                "CIS_COURSE_CATALOG.TOTAL_UNITS",
+                "SIS_DEPARTMENT.DEPARTMENT_NAME"
+            ],
+            "standard deviation of the total units of courses offered by that department": [
+                "CIS_COURSE_CATALOG.TOTAL_UNITS",
+                "SIS_DEPARTMENT.DEPARTMENT_NAME"
+            ],
+            "degree-granting departments": [
+                "SIS_DEPARTMENT.IS_DEGREE_GRANTING"
+            ],
+            "courses with a non-null total units value": [
+                "CIS_COURSE_CATALOG.TOTAL_UNITS"
+            ]
+        },
+        "join_keys": [
+            [
+                "COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_CODE",
+                "SIS_DEPARTMENT.DEPARTMENT_CODE"
+            ],
+            [
+                "SIS_COURSE_DESCRIPTION.DEPARTMENT",
+                "SIS_DEPARTMENT.DEPARTMENT_CODE"
+            ],
+            [
+                "CIS_COURSE_CATALOG.DEPARTMENT_CODE",
+                "SIS_DEPARTMENT.DEPARTMENT_CODE"
+            ]
+        ],
+        "internal_evidence": [
+            "\"math\" is predicated by \"TABLE.DEPARTMENT_NAME = 'Mathematics'\""
+        ],
+        "external_evidence": [
+            "\"Course 18\" is predicated by \"TABLE.DEPARTMENT_NAME = 'Mathematics'\"",
+            "\"Course 18\" is predicated by \"TABLE.DEPARTMENT_CODE = '18'\""
+        ],
+        "subquery_gold_questions": [
+            "For subjects offered in the academic year 2024 with a total of 12 units in the Mathematics department (Course 18), show the subject code, subject title, department name, school name, and rank within each school name group ordered by subject code.",
+            "For each department, what is the department name, and what are the variance and standard deviation of the total units of courses offered by that department, considering only courses with a non-null total units value and departments that grant degrees, specifically for the Mathematics department (Course 18)?",
+            "For subjects offered in the academic year 2024 with a total of 12 units in the Mathematics department (Course 18), show the subject code, subject title, department name, school name, and, for each school, the number of such subjects offered in that school. Only include schools where at least 2 such subjects are offered.",
+            "For each department that grants degrees, what is the department name, and what are the variance and standard deviation of the total units of courses offered by that department, considering only courses with a non-null total units value, and also show the school name for each department?"
+        ],
+        "subquery_gold_queries": [
+            "SELECT t1.SUBJECT_CODE, t1.SUBJECT_TITLE, t1.DEPARTMENT_NAME, t0.SCHOOL_NAME, RANK() OVER (PARTITION BY t0.SCHOOL_NAME ORDER BY t1.SUBJECT_CODE) AS window_column FROM SIS_DEPARTMENT t0 JOIN COURSE_CATALOG_SUBJECT_OFFERED t1 ON t0.DEPARTMENT_CODE = t1.DEPARTMENT_CODE WHERE t1.ACADEMIC_YEAR = 2024 AND t1.TOTAL_UNITS = 12 AND t1.DEPARTMENT_NAME = 'Mathematics'",
+            "SELECT sd.DEPARTMENT_NAME, VARIANCE(ccc.TOTAL_UNITS) AS variance_total_units, STDDEV(ccc.TOTAL_UNITS) AS stddev_total_units FROM SIS_DEPARTMENT sd JOIN CIS_COURSE_CATALOG ccc ON sd.DEPARTMENT_CODE = ccc.DEPARTMENT_CODE WHERE sd.DEPARTMENT_CODE = '18' AND sd.DEPARTMENT_NAME = 'Mathematics' AND sd.IS_DEGREE_GRANTING = 'Y' AND ccc.TOTAL_UNITS IS NOT NULL GROUP BY sd.DEPARTMENT_NAME ;",
+            "WITH inner_cte AS ( SELECT t1.SUBJECT_CODE, t1.SUBJECT_TITLE, t1.DEPARTMENT_NAME, t0.SCHOOL_NAME FROM SIS_DEPARTMENT t0 JOIN COURSE_CATALOG_SUBJECT_OFFERED t1 ON t0.DEPARTMENT_CODE = t1.DEPARTMENT_CODE WHERE t1.ACADEMIC_YEAR = 2024 AND t1.TOTAL_UNITS = 12 AND t1.DEPARTMENT_NAME = 'Mathematics' ) SELECT ic.SUBJECT_CODE, ic.SUBJECT_TITLE, ic.DEPARTMENT_NAME, ic.SCHOOL_NAME, sc.subject_count FROM inner_cte ic JOIN ( SELECT SCHOOL_NAME, COUNT(*) AS subject_count FROM inner_cte GROUP BY SCHOOL_NAME HAVING COUNT(*) >= 2 ) sc ON ic.SCHOOL_NAME = sc.SCHOOL_NAME ORDER BY ic.SCHOOL_NAME, ic.SUBJECT_CODE;",
+            "WITH inner_cte AS ( SELECT sd.DEPARTMENT_NAME, VARIANCE(ccc.TOTAL_UNITS) AS variance_total_units, STDDEV(ccc.TOTAL_UNITS) AS stddev_total_units FROM SIS_DEPARTMENT sd JOIN CIS_COURSE_CATALOG ccc ON sd.DEPARTMENT_CODE = ccc.DEPARTMENT_CODE WHERE sd.IS_DEGREE_GRANTING = 'Y' AND ccc.TOTAL_UNITS IS NOT NULL GROUP BY sd.DEPARTMENT_NAME ) SELECT ic.DEPARTMENT_NAME, ic.variance_total_units, ic.stddev_total_units, sd.SCHOOL_NAME FROM inner_cte ic JOIN SIS_DEPARTMENT sd ON ic.DEPARTMENT_NAME = sd.DEPARTMENT_NAME ORDER BY ic.DEPARTMENT_NAME;"
+        ],
+        "source_file": "filtered_chain_tree_with_domain.json",
+        "top_k_tables": [
+            "CIS_COURSE_CATALOG",
+            "SUBJECT_OFFERED_SUMMARY",
+            "SUBJECT_SUMMARY",
+            "SUBJECT_OFFERED",
+            "DRUPAL_COURSE_CATALOG",
+            "TIP_SUBJECT_OFFERED",
+            "COURSE_CATALOG_SUBJECT_OFFERED",
+            "SUBJECT_SELECTOR",
+            "SIS_DEPARTMENT",
+            "SUBJECT_ENROLLABLE",
+            "SIS_SUBJECT_CODE",
+            "SIS_COURSE_DESCRIPTION",
+            "LIBRARY_SUBJECT_OFFERED",
+            "SUBJECT_GROUPING",
+            "STUDENT_DEPARTMENT"
+        ]
+    },
+    {
+        "question": "For each academic year and department, what is the variance and standard deviation (using STDDEV only and never STDDEV_POP) of the total units for subjects offered in that year and department (considering only subjects that are offered in the current term, have more than 0 total units, and are in the Mathematics department), as well as the average and standard deviation (using STDDEV only and never STDDEV_POP) of the clearing cost collector values for its associated administrative department (including only departments that grant degrees and excluding the Political Science department)? Provide the academic year, department name, variance of total units, standard deviation (using STDDEV only and never STDDEV_POP) of total units, average clearing cost collector, and standard deviation (using STDDEV only and never STDDEV_POP) of clearing cost collector, in that order. Do not return any rounded answers.",
+        "db_id": "dw",
+        "sql": "WITH Subquery1 AS ( SELECT ACADEMIC_TERMS_ALL.ACADEMIC_YEAR, COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_NAME, VARIANCE(SUBJECT_SUMMARY.TOTAL_UNITS) AS total_units_variance, STDDEV(SUBJECT_SUMMARY.TOTAL_UNITS) AS total_units_stddev, COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_CODE FROM COURSE_CATALOG_SUBJECT_OFFERED JOIN ACADEMIC_TERMS_ALL ON COURSE_CATALOG_SUBJECT_OFFERED.TERM_CODE = ACADEMIC_TERMS_ALL.TERM_CODE JOIN SUBJECT_SUMMARY ON ACADEMIC_TERMS_ALL.TERM_CODE = SUBJECT_SUMMARY.TERM_CODE WHERE ACADEMIC_TERMS_ALL.IS_CURRENT_TERM = 'Y' AND SUBJECT_SUMMARY.TOTAL_UNITS > 0 AND COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_NAME = 'Mathematics' GROUP BY ACADEMIC_TERMS_ALL.ACADEMIC_YEAR, COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_NAME, COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_CODE ORDER BY total_units_variance DESC ), Subquery2 AS ( SELECT sd.DEPARTMENT_NAME, AVG(sad.CLEARING_COST_COLLECTOR) AS avg_clearing_cost_collector, STDDEV(sad.CLEARING_COST_COLLECTOR) AS stddev_clearing_cost_collector, sd.DEPARTMENT_CODE FROM SIS_DEPARTMENT sd JOIN SIS_ADMIN_DEPARTMENT sad ON sd.DEPARTMENT_CODE = sad.SIS_ADMIN_DEPARTMENT_CODE WHERE sd.IS_DEGREE_GRANTING = 'Y' AND sd.DEPARTMENT_CODE <> '17' GROUP BY sd.DEPARTMENT_NAME, sd.DEPARTMENT_CODE ) SELECT s1.ACADEMIC_YEAR, s1.DEPARTMENT_NAME, s1.total_units_variance, s1.total_units_stddev, s2.avg_clearing_cost_collector, s2.stddev_clearing_cost_collector FROM Subquery1 s1 JOIN Subquery2 s2 ON s1.DEPARTMENT_NAME = s2.DEPARTMENT_NAME AND s1.DEPARTMENT_CODE = s2.DEPARTMENT_CODE",
+        "gold_tables": [
+            "COURSE_CATALOG_SUBJECT_OFFERED",
+            "ACADEMIC_TERMS_ALL",
+            "SUBJECT_SUMMARY",
+            "SIS_DEPARTMENT",
+            "SIS_ADMIN_DEPARTMENT"
+        ],
+        "mapping": {
+            "academic year": [
+                "ACADEMIC_TERMS_ALL.ACADEMIC_YEAR"
+            ],
+            "department": [
+                "COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_NAME",
+                "SIS_DEPARTMENT.DEPARTMENT_NAME"
+            ],
+            "variance of total units": [
+                "SUBJECT_SUMMARY.TOTAL_UNITS"
+            ],
+            "standard deviation of total units": [
+                "SUBJECT_SUMMARY.TOTAL_UNITS"
+            ],
+            "subjects offered in that year and department": [
+                "COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_NAME",
+                "ACADEMIC_TERMS_ALL.ACADEMIC_YEAR"
+            ],
+            "current term": [
+                "ACADEMIC_TERMS_ALL.IS_CURRENT_TERM"
+            ],
+            "total units": [
+                "SUBJECT_SUMMARY.TOTAL_UNITS"
+            ],
+            "Mathematics department": [
+                "COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_NAME"
+            ],
+            "average clearing cost collector": [
+                "SIS_ADMIN_DEPARTMENT.CLEARING_COST_COLLECTOR"
+            ],
+            "standard deviation of clearing cost collector": [
+                "SIS_ADMIN_DEPARTMENT.CLEARING_COST_COLLECTOR"
+            ],
+            "departments that grant degrees": [
+                "SIS_DEPARTMENT.IS_DEGREE_GRANTING"
+            ],
+            "Political Science department": [
+                "SIS_DEPARTMENT.DEPARTMENT_CODE"
+            ]
+        },
+        "join_keys": [
+            [
+                "ACADEMIC_TERMS_ALL.TERM_CODE",
+                "COURSE_CATALOG_SUBJECT_OFFERED.TERM_CODE"
+            ],
+            [
+                "ACADEMIC_TERMS_ALL.TERM_CODE",
+                "SUBJECT_SUMMARY.TERM_CODE"
+            ],
+            [
+                "SIS_ADMIN_DEPARTMENT.SIS_ADMIN_DEPARTMENT_CODE",
+                "SIS_DEPARTMENT.DEPARTMENT_CODE"
+            ]
+        ],
+        "internal_evidence": [
+            "\"math\" is predicated by \"TABLE.DEPARTMENT_NAME = 'Mathematics'\"",
+            "\"degree-granting\" is predicated by \"TABLE.IS_DEGREE_GRANTING = 'Y'\""
+        ],
+        "external_evidence": [
+            "\"Course 18\" is predicated by \"TABLE.DEPARTMENT_NAME = 'Mathematics'\"",
+            "\"Political Science\" is predicated by \"TABLE.DEPARTMENT_CODE = '17'\""
+        ],
+        "subquery_gold_questions": [
+            "For each academic year and department, what is the variance and standard deviation of the total units for subjects offered in that year and department, considering only subjects that are offered in the current term, have more than 0 total units, and are in the Mathematics department (Course 18)?",
+            "For each department, provide the department name and the average and standard deviation of the clearing cost collector values for its associated administrative department, but only include departments that grant degrees and exclude the Political Science department."
+        ],
+        "subquery_gold_queries": [
+            "SELECT ACADEMIC_TERMS_ALL.ACADEMIC_YEAR, COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_NAME, VARIANCE(SUBJECT_SUMMARY.TOTAL_UNITS) AS total_units_variance, STDDEV(SUBJECT_SUMMARY.TOTAL_UNITS) AS total_units_stddev FROM COURSE_CATALOG_SUBJECT_OFFERED JOIN ACADEMIC_TERMS_ALL ON COURSE_CATALOG_SUBJECT_OFFERED.TERM_CODE = ACADEMIC_TERMS_ALL.TERM_CODE JOIN SUBJECT_SUMMARY ON ACADEMIC_TERMS_ALL.TERM_CODE = SUBJECT_SUMMARY.TERM_CODE WHERE ACADEMIC_TERMS_ALL.IS_CURRENT_TERM = 'Y' AND SUBJECT_SUMMARY.TOTAL_UNITS > 0 AND COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_NAME = 'Mathematics' GROUP BY ACADEMIC_TERMS_ALL.ACADEMIC_YEAR, COURSE_CATALOG_SUBJECT_OFFERED.DEPARTMENT_NAME ORDER BY total_units_variance DESC;",
+            "SELECT sd.DEPARTMENT_NAME, AVG(sad.CLEARING_COST_COLLECTOR) AS avg_clearing_cost_collector, STDDEV(sad.CLEARING_COST_COLLECTOR) AS stddev_clearing_cost_collector FROM SIS_DEPARTMENT sd JOIN SIS_ADMIN_DEPARTMENT sad ON sd.DEPARTMENT_CODE = sad.SIS_ADMIN_DEPARTMENT_CODE WHERE sd.IS_DEGREE_GRANTING = 'Y' AND sd.DEPARTMENT_CODE <> '17' GROUP BY sd.DEPARTMENT_NAME;"
+        ],
+        "source_file": "filtered_tree_with_domain.json",
+        "top_k_tables": [
+            "COURSE_CATALOG_SUBJECT_OFFERED",
+            "SIS_DEPARTMENT",
+            "SIS_ADMIN_DEPARTMENT",
+            "CIS_COURSE_CATALOG",
+            "SUBJECT_OFFERED_SUMMARY",
+            "SUBJECT_SUMMARY",
+            "SUBJECT_SELECTOR",
+            "DRUPAL_COURSE_CATALOG",
+            "ACADEMIC_TERMS_ALL",
+            "SUBJECT_OFFERED",
+            "ACADEMIC_TERMS",
+            "TIP_SUBJECT_OFFERED",
+            "STUDENT_DEPARTMENT",
+            "SUBJECT_ENROLLABLE",
+            "SIS_SUBJECT_CODE"
+        ]
+    }
+]

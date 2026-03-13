@@ -4,7 +4,9 @@
     sort: { key: "score", direction: "desc" },
     charts: {},
     logoImages: {},
-    leaderboardView: "table"
+    leaderboardView: "table",
+    exampleData: [],
+    exampleIndex: 0
   };
 
   const datasetMetricLabels = {
@@ -107,6 +109,98 @@
 
       logBody.appendChild(div);
     });
+  }
+
+  function formatJoinKey(joinKeyPair) {
+    if (!Array.isArray(joinKeyPair)) return String(joinKeyPair);
+    return joinKeyPair.join(" = ");
+  }
+
+  function renderExample(example) {
+    if (!example) return;
+
+    document.getElementById("example-db-id").textContent = `DB: ${example.db_id || "unknown"}`;
+    document.getElementById("example-source-file").textContent = example.source_file || "example";
+    document.getElementById("example-question").textContent = example.question || "";
+    document.getElementById("example-sql").textContent = example.sql || "";
+
+    const goldTables = document.getElementById("example-gold-tables");
+    goldTables.innerHTML = "";
+    (example.gold_tables || []).forEach((tableName) => {
+      const chip = document.createElement("span");
+      chip.className = "example-chip";
+      chip.textContent = tableName;
+      goldTables.appendChild(chip);
+    });
+
+    const joinKeys = document.getElementById("example-join-keys");
+    joinKeys.innerHTML = "";
+    (example.join_keys || []).forEach((joinKeyPair) => {
+      const chip = document.createElement("span");
+      chip.className = "example-chip";
+      chip.textContent = formatJoinKey(joinKeyPair);
+      joinKeys.appendChild(chip);
+    });
+
+    const evidenceList = document.getElementById("example-evidence");
+    evidenceList.innerHTML = "";
+    const evidence = []
+      .concat(example.internal_evidence || [])
+      .concat(example.external_evidence || []);
+
+    if (evidence.length === 0) {
+      const item = document.createElement("li");
+      item.textContent = "No evidence annotations available for this example.";
+      evidenceList.appendChild(item);
+    } else {
+      evidence.forEach((entry) => {
+        const item = document.createElement("li");
+        item.textContent = entry;
+        evidenceList.appendChild(item);
+      });
+    }
+  }
+
+  function renderCurrentExample() {
+    const select = document.getElementById("example-select");
+    if (select) {
+      select.value = String(state.exampleIndex);
+    }
+    renderExample(state.exampleData[state.exampleIndex]);
+  }
+
+  function bindExampleBrowser(examples) {
+    if (!examples || examples.length === 0) return;
+
+    state.exampleData = examples;
+    state.exampleIndex = 0;
+
+    const select = document.getElementById("example-select");
+    const prev = document.getElementById("example-prev");
+    const next = document.getElementById("example-next");
+    select.innerHTML = "";
+
+    state.exampleData.forEach(function (_, index) {
+      select.appendChild(createOption(String(index), `Task ${index}`));
+    });
+
+    select.addEventListener("change", function () {
+      state.exampleIndex = Number(select.value);
+      renderCurrentExample();
+    });
+
+    prev.addEventListener("click", function () {
+      state.exampleIndex = (state.exampleIndex - 1 + state.exampleData.length) % state.exampleData.length;
+      renderCurrentExample();
+    });
+
+    next.addEventListener("click", function () {
+      state.exampleIndex = (state.exampleIndex + 1) % state.exampleData.length;
+      renderCurrentExample();
+    });
+
+    select.value = String(state.exampleIndex);
+    renderCurrentExample();
   }
 
   function logoPathForModel(model) {
@@ -582,16 +676,18 @@
 
   async function init() {
     try {
-      const [changelog, leaderboard, datasetStats, categoryPerformance, subtaskRadar, errorTaxonomy] = await Promise.all([
+      const [changelog, leaderboard, datasetStats, categoryPerformance, subtaskRadar, errorTaxonomy, exampleData] = await Promise.all([
         fetchJSON("static/jsons/changelog.json"),
         fetchJSON("data/leaderboard.json"),
         fetchJSON("data/dataset_stats.json"),
         fetchJSON("data/category_performance.json"),
         fetchJSON("data/subtask_radar.json"),
-        fetchJSON("data/error_taxonomy.json")
+        fetchJSON("data/error_taxonomy.json"),
+        fetchJSON("data/example_data.json")
       ]);
 
       fillChangelog(changelog);
+      bindExampleBrowser(exampleData);
 
       state.leaderboardRows = toLeaderboardRows(leaderboard);
       await preloadAllLogos(state.leaderboardRows);

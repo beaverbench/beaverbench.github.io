@@ -62,7 +62,7 @@
     <script src="static/js/bulma-slider.min.js"></script>
     <script src="static/js/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="static/js/benchmark.js?v=20260309"></script>
+    <script defer src="static/js/benchmark.js?v=20260313"></script>
 
     <!--imports for code highlighting and copy-->
     <link
@@ -337,6 +337,56 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
                 We also encourage the problem open-domain text-to-SQL</p>
               </div>
               <div class="left-boxes">
+                <div class="example-header">
+                  <div>
+                    <h2 class="title is-4">Example Data Points</h2>
+                    <p class="example-subtitle">Representative BEAVER tasks with question, SQL, and annotation slices.</p>
+                  </div>
+                  <div class="example-toolbar">
+                    <button id="example-prev" class="example-nav" type="button" aria-label="Previous example">
+                      <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="example-select-wrap">
+                      <label class="label is-size-7" for="example-select">Task id</label>
+                      <div class="select is-small is-fullwidth">
+                        <select id="example-select"></select>
+                      </div>
+                    </div>
+                    <button id="example-next" class="example-nav" type="button" aria-label="Next example">
+                      <i class="fas fa-arrow-right"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="example-stage">
+                  <div class="example-meta">
+                    <span class="example-badge" id="example-db-id">db</span>
+                    <span class="example-badge" id="example-source-file">source</span>
+                  </div>
+                  <div class="example-grid">
+                    <div class="example-panel example-panel--question">
+                      <h3 class="example-label">Question</h3>
+                      <p id="example-question" class="example-question"></p>
+                    </div>
+                    <div class="example-panel example-panel--sql">
+                      <h3 class="example-label">SQL</h3>
+                      <pre class="example-code"><code id="example-sql"></code></pre>
+                    </div>
+                    <div class="example-panel">
+                      <h3 class="example-label">Gold Tables</h3>
+                      <div id="example-gold-tables" class="example-chip-list"></div>
+                    </div>
+                    <div class="example-panel">
+                      <h3 class="example-label">Join Keys</h3>
+                      <div id="example-join-keys" class="example-chip-list"></div>
+                    </div>
+                    <div class="example-panel example-panel--evidence">
+                      <h3 class="example-label">Evidence</h3>
+                      <ul id="example-evidence" class="example-list"></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="left-boxes">
                 <h2 class="title is-4">Usage</h2>
                 <p>
                   We have created a unified MySQL version for our dataset. A free
@@ -534,7 +584,196 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       width: 100%;
     }
 
+    .example-header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .example-subtitle {
+      color: #5f6773;
+      margin-top: 6px;
+    }
+
+    .example-toolbar {
+      display: grid;
+      grid-template-columns: 44px minmax(180px, 1fr) 44px;
+      gap: 10px;
+      align-items: end;
+      min-width: min(100%, 420px);
+      flex-shrink: 0;
+    }
+
+    .example-select-wrap {
+      min-width: 0;
+    }
+
+    .example-select-wrap .label {
+      margin-bottom: 6px;
+    }
+
+    .example-nav {
+      width: 44px;
+      height: 44px;
+      border: 1px solid #ced5df;
+      background: #ffffff;
+      color: #394150;
+      border-radius: 12px;
+      cursor: pointer;
+      padding: 0;
+      transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .example-nav:hover {
+      background: #f5f7fa;
+      border-color: #b7c0cc;
+      transform: translateY(-1px);
+    }
+
+    .example-stage {
+      background: linear-gradient(180deg, #fafafa 0%, #f0f2f5 100%);
+      border: 1px solid #d9dde5;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      min-width: 0;
+    }
+
+    .example-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+      min-width: 0;
+    }
+
+    .example-badge {
+      background: #485fc7;
+      border: 1px solid #485fc7;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-weight: 600;
+      color: #ffffff;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    .example-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 14px;
+      align-items: start;
+      min-width: 0;
+    }
+
+    .example-panel {
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid #d9dde5;
+      border-radius: 14px;
+      padding: 14px;
+      min-height: 100%;
+      backdrop-filter: blur(6px);
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .example-panel--evidence {
+      grid-column: 1 / -1;
+    }
+
+    .example-label {
+      color: #363636;
+      font-size: 0.92rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 10px;
+    }
+
+    .example-question {
+      font-size: inherit;
+      line-height: 1.6;
+      margin: 0;
+      color: #4a4a4a;
+      height: 220px;
+      overflow: auto;
+      padding-right: 6px;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    .example-code {
+      background: #ffffff;
+      color: #363636;
+      border: 1px solid #d9d9d9;
+      font-size: inherit;
+      white-space: pre-wrap;
+      word-break: break-word;
+      height: 220px;
+      overflow: auto;
+      margin: 0;
+      max-width: 100%;
+    }
+
+    .example-chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      height: 140px;
+      overflow: auto;
+      align-content: flex-start;
+      padding-right: 4px;
+      max-width: 100%;
+    }
+
+    .example-chip {
+      background: #eef3ff;
+      border: 1px solid #d7def5;
+      color: #3b4a73;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: inherit;
+      line-height: 1.35;
+    }
+
+    .example-list {
+      margin: 0;
+      padding-left: 18px;
+      color: #4a4a4a;
+      font-size: inherit;
+      height: 90px;
+      overflow: auto;
+      padding-right: 6px;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+    }
+
+    .example-list li + li {
+      margin-top: 6px;
+    }
+
     @media screen and (max-width: 768px) {
+      .example-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+      }
+
+      .example-toolbar {
+        grid-template-columns: 38px 1fr 38px;
+        grid-template-areas:
+          "prev . next"
+          "select select select";
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .example-select-wrap {
+        grid-area: select;
+        min-width: 0;
+      }
+
       .leaderboard-header {
         display: flex;
         flex-direction: column;
@@ -572,6 +811,55 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       .model-logo {
         width: 12px;
         height: 12px;
+      }
+
+      .example-nav {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+      }
+
+      #example-prev {
+        grid-area: prev;
+      }
+
+      #example-next {
+        grid-area: next;
+      }
+
+      .example-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .example-stage {
+        padding: 14px;
+        overflow: hidden;
+      }
+
+      .example-panel {
+        padding: 12px;
+        width: 100%;
+      }
+
+      .example-question {
+        height: 150px;
+      }
+
+      .example-code {
+        height: 170px;
+      }
+
+      .example-chip-list,
+      .example-list {
+        height: 72px;
+      }
+
+      .example-question,
+      .example-code,
+      .example-chip-list,
+      .example-list {
+        font-size: inherit;
       }
     }
   </style>
