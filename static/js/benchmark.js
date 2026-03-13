@@ -232,9 +232,10 @@
       .concat(example.external_evidence || []);
 
     if (evidence.length === 0) {
-      const item = document.createElement("li");
-      item.textContent = "No evidence annotations available for this example.";
-      evidenceList.appendChild(item);
+      // const item = document.createElement("li");
+      // item.textContent = "No evidence annotations available for this example.";
+      // evidenceList.appendChild(item);
+      evidenceList.innerHTML = "No evidence annotations available for this example.";
     } else {
       evidence.forEach((entry) => {
         const item = document.createElement("li");

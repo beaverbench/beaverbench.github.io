@@ -223,7 +223,7 @@
         </div>
       </div>
     </section>
-    <section class="section" style="padding-top: 0.5rem;">
+    <section class="section" style="padding-top: 0rem;">
       <div class="container is-max-desktop">
         <div class="columns is-size-7">
           <div class="column is-full">
@@ -333,14 +333,21 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
             </div>
             <div id="overview-view" class="page-view">
               <div class="left-boxes">
-                <h2 class="title is-4">BEAVER</h2>
-                <p>Beaver is an enterprise text-to-SQL dataset consisted of xxx queries and xxx tables across xxx databases. Queries and databases were collected from <i>private</i> organizations. Compared to previous text-to-SQL datasets focusing on public tables and
-                We also encourage the problem open-domain text-to-SQL</p>
+                <!-- <h2 class="title is-4">Overview</h2> -->
+                <p>
+                  BEAVER is an enterprise text-to-SQL dataset consisted of xxx queries and xxx tables across xxx databases. The publicly available dev set includes xxx queries spanning while we reserve the hidden one as undisclosed test set. Queries and databases were collected from <i>private</i> organizations.
+                  <br />
+                  To facilitate fine-grained evaluation and analysis, we provide
+                  <ul style="list-style-type: disc; padding-left:20px">
+                    <li>annotations for five subtasks: multi-table retrieval, join key detection, column mapping, domain knowledge extraction, and query decomposition</li>
+                    <li>three categories of queries: <span style="text-decoration: underline;">complex queries</span> without domain knowledge, <span style="text-decoration: underline;">domain-specific queries</span> with minimal complexity, and <span style="text-decoration: underline;">domain-specific complex queries</span></li>
+                  </ul>
+                </p>
               </div>
               <div class="left-boxes">
                 <div class="example-header">
                   <div>
-                    <h2 class="title is-4">Example Data Points</h2>
+                    <h2 class="title is-4">Example Data</h2>
                     <p class="example-subtitle">Representative BEAVER tasks with question, SQL, and annotation slices.</p>
                   </div>
                   <div class="example-toolbar">
@@ -387,7 +394,7 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
                   </div>
                 </div>
               </div>
-              <div class="left-boxes">
+              <!-- <div class="left-boxes">
                 <h2 class="title is-4">Usage</h2>
                 <p>
                   We have created a unified MySQL version for our dataset. A free
@@ -410,11 +417,11 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
                   <code>DW</code> queries, you can download the free oracle
                   database and import the CSVs.
                 </p>
-              </div>
-              <div class="left-boxes">
+              </div> -->
+              <!-- <div class="left-boxes">
                 <h2 class="title is-4">Changelog</h2>
                 <div class="container" id="changelog-body"></div>
-              </div>
+              </div> -->
               <div class="left-boxes">
                 <h2 class="title is-4">Citation</h2>
                 <p>
@@ -475,6 +482,7 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
     }
 
     .left-boxes {
+      font-size: 110%;
       padding: 20px;
       background-color: #f5f5f5;
       border-radius: 10px;
@@ -486,7 +494,7 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       justify-content: center;
       gap: 12px;
       flex-wrap: wrap;
-      margin-top: 10px;
+      margin-top: 3rem;
     }
 
     .publication-links {
@@ -782,11 +790,12 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       padding-left: 18px;
       color: #4a4a4a;
       font-size: inherit;
-      height: 90px;
+      /* height: 90px; */
       overflow: auto;
       padding-right: 6px;
       max-width: 100%;
       overflow-wrap: anywhere;
+      list-style-type: disc;
     }
 
     .example-list li + li {
