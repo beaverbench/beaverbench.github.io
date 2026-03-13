@@ -7,7 +7,11 @@
     leaderboardView: "table",
     exampleData: [],
     exampleIndex: 0,
-    sqlFormatter: null
+    sqlFormatter: null,
+    subtaskHidden: {
+      by_method: {},
+      by_setting: {}
+    }
   };
 
   const datasetMetricLabels = {
@@ -701,11 +705,17 @@
     const axisKeys = subtaskRadarData.axes.map((axis) => axis.key);
     const axisLabels = subtaskRadarData.axes.map((axis) => axis.label);
 
-    function renderSubtaskLegend(items) {
+    function renderSubtaskLegend(items, chartDatasets) {
       legend.innerHTML = "";
       items.forEach(function (item) {
         const node = document.createElement("div");
         node.className = "subtask-legend-item";
+        if (item.hidden) {
+          node.classList.add("is-muted");
+        }
+        node.setAttribute("role", "button");
+        node.setAttribute("tabindex", "0");
+        node.setAttribute("aria-pressed", item.hidden ? "false" : "true");
 
         const swatch = document.createElement("span");
         swatch.className = "subtask-legend-swatch";
@@ -728,6 +738,18 @@
         }
 
         node.appendChild(text);
+        node.addEventListener("click", function () {
+          const hiddenState = state.subtaskHidden[viewMode];
+          hiddenState[item.key] = !hiddenState[item.key];
+          draw();
+        });
+        node.addEventListener("keydown", function (event) {
+          if (event.key !== "Enter" && event.key !== " ") return;
+          event.preventDefault();
+          const hiddenState = state.subtaskHidden[viewMode];
+          hiddenState[item.key] = !hiddenState[item.key];
+          draw();
+        });
         legend.appendChild(node);
       });
     }
@@ -768,12 +790,15 @@
           pointBorderWidth: 1,
           pointRadius: 3,
           borderWidth: 2,
-          fill: true
+          fill: true,
+          hidden: !!state.subtaskHidden.by_setting[methodEntry.method]
         }));
         legendItems = setting.methods.map((methodEntry, idx) => ({
+          key: methodEntry.method,
           title: methodEntry.method,
           description: "",
-          color: radarMethodColors[idx % radarMethodColors.length]
+          color: radarMethodColors[idx % radarMethodColors.length],
+          hidden: !!state.subtaskHidden.by_setting[methodEntry.method]
         }));
       } else {
         const selectedMethod = methodSelect.value || subtaskRadarData.settings[0].methods[0].method;
@@ -789,17 +814,20 @@
             pointBorderWidth: 1,
             pointRadius: 3,
             borderWidth: 2,
-            fill: true
+            fill: true,
+            hidden: !!state.subtaskHidden.by_method[setting.id]
           };
         });
         legendItems = subtaskRadarData.settings.map((setting, idx) => ({
+          key: setting.id,
           title: setting.label,
           description: setting.description,
-          color: radarSettingColors[idx % radarSettingColors.length]
+          color: radarSettingColors[idx % radarSettingColors.length],
+          hidden: !!state.subtaskHidden.by_method[setting.id]
         }));
       }
 
-      renderSubtaskLegend(legendItems);
+      renderSubtaskLegend(legendItems, datasets);
 
       if (state.charts.subtask) state.charts.subtask.destroy();
       state.charts.subtask = new Chart(document.getElementById("subtask-chart"), {

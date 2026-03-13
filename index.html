@@ -61,7 +61,7 @@
     <script src="static/js/bulma-slider.min.js"></script>
     <script src="static/js/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script defer src="static/js/benchmark.js?v=20260319"></script>
+    <script defer src="static/js/benchmark.js?v=20260320"></script>
 
     <!--imports for code highlighting and copy-->
     <link
@@ -606,6 +606,17 @@ title={BEAVER: an enterprise benchmark for text-to-sql},
       border: 1px solid #d9dde5;
       border-radius: 12px;
       background: rgba(255, 255, 255, 0.82);
+      cursor: pointer;
+      transition: opacity 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .subtask-legend-item:hover {
+      border-color: #bcc6d4;
+      transform: translateY(-1px);
+    }
+
+    .subtask-legend-item.is-muted {
+      opacity: 0.5;
     }
 
     .subtask-legend--stacked .subtask-legend-item {
