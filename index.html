@@ -244,6 +244,20 @@
               <div class="left-boxes">
                 <div class="leaderboard-header">
                   <h2 class="title is-3 has-text-centered">Leaderboard</h2>
+                  
+                  <div class="has-text-centered" style="margin-top: -10px; margin-bottom: 15px;">
+                    <a id="toggle-instructions-btn" style="cursor: pointer; font-weight: 600; text-decoration: underline;">
+                      Submission Instructions
+                    </a>
+                  </div>
+                  
+                  <div id="submission-instructions-box" class="is-hidden" style="margin-bottom: 20px; padding: 15px; background-color: #ffffff; border: 1px solid #dbdbdb; border-radius: 6px;">
+                    <h4 class="title is-6" style="margin-bottom: 10px;">How to Submit:</h4>
+                    <p class="is-size-7">
+                      Please send an email to peterbc@mit.edu, along with your method name, a brief description of the method, and, optionally, a link to your paper or codebase. We will follow up with detailed instructions.
+                    </p>
+                  </div>
+
                   <div class="view-toggle">
                     <button id="table-view-btn" class="button is-small is-dark" title="Table leaderboard">
                       <span class="icon is-small"><i class="fas fa-table"></i></span>
@@ -472,6 +486,21 @@
         </div>
       </div>
     </section>
+  
+    <script>
+      document.getElementById('toggle-instructions-btn').addEventListener('click', function(e) {
+        e.preventDefault();
+        const instructionsBox = document.getElementById('submission-instructions-box');
+        
+        // Toggle Bulma's 'is-hidden' class
+        if (instructionsBox.classList.contains('is-hidden')) {
+          instructionsBox.classList.remove('is-hidden');
+        } else {
+          instructionsBox.classList.add('is-hidden');
+        }
+      });
+    </script>
+
   </body>
   <style>
     .code-container {
