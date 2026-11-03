@@ -1,0 +1,7 @@
+{
+  "settings": [
+    { "id": "setting_0", "label": "Setting 0", "description": "End-to-end (no subtask annotations)" },
+    { "id": "setting_1", "label": "Setting 1", "description": "With annotations for schema-linking subtasks (table retrieval, join keys, column mapping)" },
+    { "id": "setting_2", "label": "Setting 2", "description": "With annotations for schema-linking subtasks, domain knowledge, and query decomposition" }
+  ]
+}

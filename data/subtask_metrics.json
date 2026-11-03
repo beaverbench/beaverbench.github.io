@@ -2,7 +2,6 @@
   "settings": [
     {
       "setting": "Setting 0",
-      "description": "End-to-end (no subtask annotations)",
       "methods": [
         {
           "method": "ReFoRCE",
@@ -44,7 +43,6 @@
     },
     {
       "setting": "Setting 1",
-      "description": "With annotations for schema-linking subtasks (table retrieval, join keys, column mapping)",
       "methods": [
         {
           "method": "ReFoRCE",
@@ -86,7 +84,6 @@
     },
     {
       "setting": "Setting 2",
-      "description": "With all subtask annotations",
       "methods": [
         {
           "method": "ReFoRCE",

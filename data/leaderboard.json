@@ -1,70 +1,37 @@
 {
-  "models": [
-    "Claude-4.5-sonnet",
-    "GPT-o4-mini",
-    "GPT-5.2",
-    "GPT-5-mini",
-    "Gemini-2.0-flash",
-    "Qwen3-Next-80B-A3B-Instruct",
-    "MiniMax M2.1",
-    "Overall"
-  ],
-  "methods": [
-    {
-      "method": "ReFoRCE",
-      "submission_date": "Feb 27, 2026",
-      "scores": {
-        "Claude-4.5-sonnet": 11.4,
-        "GPT-o4-mini": 10.6,
-        "GPT-5.2": 10.8,
-        "GPT-5-mini": 8.4,
-        "Gemini-2.0-flash": 8.5,
-        "Qwen3-Next-80B-A3B-Instruct": 9.0,
-        "MiniMax M2.1": 7.7,
-        "Overall": 9.5
-      }
-    },
-    {
-      "method": "Few-shot",
-      "submission_date": "Feb 25, 2026",
-      "scores": {
-        "Claude-4.5-sonnet": 8.8,
-        "GPT-o4-mini": 8.7,
-        "GPT-5.2": 7.6,
-        "GPT-5-mini": 7.9,
-        "Gemini-2.0-flash": 6.7,
-        "Qwen3-Next-80B-A3B-Instruct": 6.7,
-        "MiniMax M2.1": 7.0,
-        "Overall": 7.6
-      }
-    },
-    {
-      "method": "DIN-SQL",
-      "submission_date": "Feb 24, 2026",
-      "scores": {
-        "Claude-4.5-sonnet": 5.7,
-        "GPT-o4-mini": 6.1,
-        "GPT-5.2": 6.1,
-        "GPT-5-mini": 5.6,
-        "Gemini-2.0-flash": 3.7,
-        "Qwen3-Next-80B-A3B-Instruct": 4.2,
-        "MiniMax M2.1": 4.2,
-        "Overall": 5.1
-      }
-    },
-    {
-      "method": "DAIL-SQL",
-      "submission_date": "Feb 24, 2026",
-      "scores": {
-        "Claude-4.5-sonnet": 4.5,
-        "GPT-o4-mini": 4.3,
-        "GPT-5.2": 4.7,
-        "GPT-5-mini": 3.9,
-        "Gemini-2.0-flash": 2.5,
-        "Qwen3-Next-80B-A3B-Instruct": 2.7,
-        "MiniMax M2.1": 2.3,
-        "Overall": 3.6
-      }
-    }
+  "entries": [
+    {"method": "ReFoRCE", "model": "Claude-Opus-5.5", "submission_date": "2026-10-16", "scores": [14.0, null, null]},
+    {"method": "ReFoRCE", "model": "GPT-5.6-Sol", "submission_date": "2026-07-13", "scores": [11.5, 20.3, 30.1]},
+    {"method": "ReFoRCE", "model": "Nemotron-3.5-Lightning", "submission_date": "2026-10-14", "scores": [9.8, null, null]},
+    {"method": "ReFoRCE", "model": "Claude-4.5-sonnet", "submission_date": "2026-02-27", "scores": [11.4, 20.8, 27.3]},
+    {"method": "ReFoRCE", "model": "GPT-o4-mini", "submission_date": "2026-02-27", "scores": [10.6, 21.9, 29.5]},
+    {"method": "ReFoRCE", "model": "GPT-5.2", "submission_date": "2026-02-27", "scores": [10.8, 20.1, 30.1]},
+    {"method": "ReFoRCE", "model": "GPT-5-mini", "submission_date": "2026-02-27", "scores": [8.4, 17.5, 23.8]},
+    {"method": "ReFoRCE", "model": "Gemini-2.0-flash", "submission_date": "2026-02-27", "scores": [8.5, 14.7, 20.8]},
+    {"method": "ReFoRCE", "model": "Qwen3-Next-80B-A3B-Instruct", "submission_date": "2026-02-27", "scores": [9.0, 18.5, 26.2]},
+    {"method": "ReFoRCE", "model": "MiniMax M2.1", "submission_date": "2026-02-27", "scores": [7.7, 19.0, 23.3]},
+    {"method": "Few-shot", "model": "GPT-5.6-Sol", "submission_date": "2026-07-13", "scores": [7.0, 11.7, 19.9]},
+    {"method": "Few-shot", "model": "Claude-4.5-sonnet", "submission_date": "2026-02-27", "scores": [8.8, 20.0, 30.5]},
+    {"method": "Few-shot", "model": "GPT-o4-mini", "submission_date": "2026-02-27", "scores": [8.7, 18.3, 26.0]},
+    {"method": "Few-shot", "model": "GPT-5.2", "submission_date": "2026-02-27", "scores": [7.6, 19.7, 29.2]},
+    {"method": "Few-shot", "model": "GPT-5-mini", "submission_date": "2026-02-27", "scores": [7.9, 17.1, 21.0]},
+    {"method": "Few-shot", "model": "Gemini-2.0-flash", "submission_date": "2026-02-27", "scores": [6.7, 15.0, 20.7]},
+    {"method": "Few-shot", "model": "Qwen3-Next-80B-A3B-Instruct", "submission_date": "2026-02-27", "scores": [6.7, 15.8, 17.4]},
+    {"method": "Few-shot", "model": "MiniMax M2.1", "submission_date": "2026-02-27", "scores": [7.0, 13.4, 16.9]},
+    {"method": "DIN-SQL", "model": "Claude-4.5-sonnet", "submission_date": "2026-02-27", "scores": [5.7, 10.5, 17.0]},
+    {"method": "DIN-SQL", "model": "GPT-o4-mini", "submission_date": "2026-02-27", "scores": [6.1, 12.1, 19.3]},
+    {"method": "DIN-SQL", "model": "GPT-5.2", "submission_date": "2026-02-27", "scores": [6.1, 9.4, 16.4]},
+    {"method": "DIN-SQL", "model": "GPT-5-mini", "submission_date": "2026-02-27", "scores": [5.6, 11.1, 17.0]},
+    {"method": "DIN-SQL", "model": "Gemini-2.0-flash", "submission_date": "2026-02-27", "scores": [3.7, 6.8, 7.6]},
+    {"method": "DIN-SQL", "model": "Qwen3-Next-80B-A3B-Instruct", "submission_date": "2026-02-27", "scores": [4.2, 9.2, 12.4]},
+    {"method": "DIN-SQL", "model": "MiniMax M2.1", "submission_date": "2026-02-27", "scores": [4.2, 6.0, 7.7]},
+    {"method": "DAIL-SQL", "model": "Claude-4.5-sonnet", "submission_date": "2026-02-27", "scores": [4.5, 9.6, 14.0]},
+    {"method": "DAIL-SQL", "model": "GPT-o4-mini", "submission_date": "2026-02-27", "scores": [4.3, 9.8, 12.9]},
+    {"method": "DAIL-SQL", "model": "GPT-5.2", "submission_date": "2026-02-27", "scores": [4.7, 8.7, 13.2]},
+    {"method": "DAIL-SQL", "model": "GPT-5-mini", "submission_date": "2026-02-27", "scores": [3.9, 8.6, 10.9]},
+    {"method": "DAIL-SQL", "model": "Gemini-2.0-flash", "submission_date": "2026-02-27", "scores": [2.5, 6.6, 9.4]},
+    {"method": "DAIL-SQL", "model": "Qwen3-Next-80B-A3B-Instruct", "submission_date": "2026-02-27", "scores": [2.7, 7.6, 11.0]},
+    {"method": "DAIL-SQL", "model": "MiniMax M2.1", "submission_date": "2026-02-27", "scores": [2.3, 5.1, 7.1]},
+    {"method": "NVIDIA Auto-Ontology", "model": "Claude-Opus-5.5", "submission_date": "2026-10-31", "scores": [12.4, null, null]}
   ]
 }

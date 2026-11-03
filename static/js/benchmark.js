@@ -1,7 +1,7 @@
 (function () {
   const state = {
     leaderboardRows: [],
-    sort: { key: "score", direction: "desc" },
+    sort: { key: "score0", direction: "desc" },
     charts: {},
     logoImages: {},
     leaderboardView: "table",
@@ -32,6 +32,61 @@
   const radarMethodColors = ["#E46AA3", "#7E83FF", "#F07A7A", "#58D68D"];
   const radarSettingColors = ["#E46AA3", "#7E83FF", "#F07A7A"];
   const LOGO_MARKER_SIZE = 20;
+
+  // Optional per-method metadata. `logo` is an org logo shown next to the method name and
+  // used as the scatter marker; `url` links the method name in the table; `hideInScatter`
+  // leaves the method out of the scatter unless it is selected in the Method filter.
+  const methodInfo = {
+    "NVIDIA Auto-Ontology": {
+      logo: "static/images/nvidia.webp",
+      url: "https://github.com/NVIDIA/auto-ontology"
+    },
+    "ReFoRCE": {
+      url: "https://github.com/Snowflake-Labs/ReFoRCE/tree/main/methods/ReFoRCE"
+    },
+    "DIN-SQL": {
+      url: "https://github.com/xlang-ai/Spider2/tree/main/spider2-lite/baselines/dinsql",
+      hideInScatter: true
+    },
+    "DAIL-SQL": {
+      url: "https://github.com/xlang-ai/Spider2/tree/main/spider2-lite/baselines/dailsql",
+      hideInScatter: true
+    }
+  };
+
+  // Matched by model-name prefix.
+  const modelLogos = [
+    ["Claude", "static/images/claude.webp"],
+    ["GPT", "static/images/openai.webp"],
+    ["Gemini", "static/images/gemini.webp"],
+    ["Qwen", "static/images/qwen.png"],
+    ["MiniMax", "static/images/minimax.jpeg"],
+    ["Nemotron", "static/images/nvidia.webp"]
+  ];
+  const defaultLogo = "static/images/beaver.png";
+
+  const scoreSortKeys = ["score0", "score1", "score2"];
+  const numericSortKeys = [...scoreSortKeys, "rank"];
+
+  const exampleCategoryLabels = {
+    "filtered_chain_without_domain.json": "Complex query",
+    "filtered_tree_with_domain.json": "Domain-specific query",
+    "filtered_tree_chain_with_domain.json": "Domain-specific complex query",
+    "filtered_chain_tree_with_domain.json": "Domain-specific complex query"
+  };
+
+  const categoryMetrics = [
+    ["complex_queries", "Complex"],
+    ["domain_specific_queries", "Domain-Specific"],
+    ["domain_specific_complex_queries", "Domain+Complex"],
+    ["synthetic_overall", "Synthetic Overall"],
+    ["real_overall", "Real Overall"]
+  ];
+
+  // Submission dates are ISO (YYYY-MM-DD) and handled in UTC so they don't shift with the viewer's timezone.
+  const dayFormat = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+  const monthFormat = new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric", timeZone: "UTC" });
+  const listFormat = new Intl.ListFormat("en", { type: "conjunction" });
 
   const leaderboardLogoOverlayPlugin = {
     id: "leaderboardLogoOverlay",
@@ -69,6 +124,36 @@
         ctx.strokeStyle = "#ffffff";
         ctx.stroke();
         ctx.restore();
+      });
+    }
+  };
+
+  // Nudges scatter logos sideways so markers that would overlap sit side by side. Runs after every
+  // layout (including resizes) and moves the points themselves, so tooltips follow the logos.
+  const leaderboardSpreadPlugin = {
+    id: "leaderboardSpread",
+    afterDatasetsUpdate: function (chart) {
+      const points = chart.getDatasetMeta(0).data;
+      const step = LOGO_MARKER_SIZE + 2;
+      const left = chart.chartArea.left + LOGO_MARKER_SIZE / 2;
+      const right = chart.chartArea.right - LOGO_MARKER_SIZE / 2;
+      const placed = [];
+
+      // Left to right, and top (highest score) to bottom within the same date. Candidate positions
+      // alternate right/left of the true date and must stay inside the plot area.
+      [...points].sort((a, b) => a.x - b.x || a.y - b.y).forEach((point) => {
+        const baseX = point.x;
+        let x = baseX;
+        for (let k = 0; k < 100; k++) {
+          const candidate = baseX + Math.ceil(k / 2) * step * (k % 2 ? 1 : -1);
+          if (candidate < left || candidate > right) continue;
+          if (!placed.some((p) => Math.abs(p.x - candidate) < step && Math.abs(p.y - point.y) < step)) {
+            x = candidate;
+            break;
+          }
+        }
+        point.x = x;
+        placed.push({ x, y: point.y });
       });
     }
   };
@@ -142,19 +227,7 @@
   }
 
   function getExampleCategoryLabel(sourceFile) {
-    if (sourceFile === "filtered_chain_without_domain.json") {
-      return "Complex query";
-    }
-    if (sourceFile === "filtered_tree_with_domain.json") {
-      return "Domain-specific query";
-    }
-    if (
-      sourceFile === "filtered_tree_chain_with_domain.json" ||
-      sourceFile === "filtered_chain_tree_with_domain.json"
-    ) {
-      return "Domain-specific complex query";
-    }
-    return sourceFile || "example";
+    return exampleCategoryLabels[sourceFile] || sourceFile || "example";
   }
 
   function formatExampleSqlFallback(sql) {
@@ -376,13 +449,12 @@
   }
 
   function logoPathForModel(model) {
-    if (model.startsWith("Claude")) return "static/images/claude.webp";
-    if (model.startsWith("GPT")) return "static/images/openai.webp";
-    if (model.startsWith("Gemini")) return "static/images/gemini.webp";
-    if (model.startsWith("Qwen")) return "static/images/qwen.png";
-    if (model.startsWith("MiniMax")) return "static/images/minimax.jpeg";
-    if (model === "Overall") return "static/images/beaver.png";
-    return "static/images/beaver.png";
+    const match = modelLogos.find(([prefix]) => model.startsWith(prefix));
+    return match ? match[1] : defaultLogo;
+  }
+
+  function logoLabel(text, logo) {
+    return `<span class="logo-label"><img src="${logo}" alt="${text} logo" onerror="this.src='${defaultLogo}'" /><span>${text}</span></span>`;
   }
 
   function getLogoImage(path) {
@@ -399,7 +471,7 @@
   }
 
   function preloadAllLogos(rows) {
-    const paths = [...new Set(rows.map((row) => row.logo))];
+    const paths = [...new Set(rows.flatMap((row) => [row.modelLogo, row.methodLogo]).filter(Boolean))];
     const loads = paths.map((path) => new Promise((resolve) => {
       const img = getLogoImage(path);
       if (img.complete) {
@@ -418,43 +490,62 @@
     return Promise.all(loads);
   }
 
+  function isScore(value) {
+    return typeof value === "number";
+  }
+
+  function parseIsoDate(value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value || "");
+    return match ? Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : null;
+  }
+
+  // Missing values always sort last, regardless of direction.
+  function compareNullsLast(a, b, order) {
+    const aMissing = !isScore(a);
+    const bMissing = !isScore(b);
+    if (aMissing || bMissing) return aMissing - bMissing;
+    return (a - b) * order;
+  }
+
+  // Ranks are based on Setting 0; rows without a Setting 0 score are unranked.
   function addLeaderboardRanks(rows) {
-    const sorted = [...rows].sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
+    const sorted = rows.filter((row) => isScore(row.score0)).sort((a, b) => {
+      if (b.score0 !== a.score0) return b.score0 - a.score0;
       const methodCmp = a.method.localeCompare(b.method);
       if (methodCmp !== 0) return methodCmp;
       return a.model.localeCompare(b.model);
     });
 
-    const ranked = sorted.map((row, index) => ({
-      ...row,
-      rank: index + 1
-    }));
-
     const rankMap = {};
-    ranked.forEach((row) => {
-      rankMap[`${row.method}__${row.model}`] = row.rank;
+    sorted.forEach((row, index) => {
+      rankMap[`${row.method}__${row.model}`] = index + 1;
     });
 
     return rows.map((row) => ({
       ...row,
-      rank: rankMap[`${row.method}__${row.model}`]
+      rank: rankMap[`${row.method}__${row.model}`] ?? null
     }));
   }
 
   function toLeaderboardRows(leaderboardData) {
-    const rows = [];
-    leaderboardData.methods.forEach((methodRow) => {
-      leaderboardData.models.forEach((model) => {
-        rows.push({
-          method: methodRow.method,
-          model,
-          score: methodRow.scores[model],
-          submission_date: methodRow.submission_date || "Unknown",
-          logo: logoPathForModel(model)
-        });
+    const rows = leaderboardData.entries
+      .filter((entry) => (entry.scores || []).some(isScore))
+      .map((entry) => {
+        const scores = (entry.scores || []).map((v) => (isScore(v) ? v : null));
+        const submissionTs = parseIsoDate(entry.submission_date);
+        return {
+          method: entry.method,
+          model: entry.model,
+          score0: scores[0] ?? null,
+          score1: scores[1] ?? null,
+          score2: scores[2] ?? null,
+          submission_ts: submissionTs,
+          submission_date: submissionTs !== null ? dayFormat.format(submissionTs) : "Unknown",
+          methodLogo: methodInfo[entry.method]?.logo || null,
+          methodUrl: methodInfo[entry.method]?.url || null,
+          modelLogo: logoPathForModel(entry.model)
+        };
       });
-    });
 
     return addLeaderboardRanks(rows);
   }
@@ -501,23 +592,62 @@
     }
   }
 
+  // Step line through the dates where the best Setting 0 score improved, extended to the latest date.
+  function bestSoFar(points) {
+    const sorted = [...points].sort((a, b) => a.x - b.x);
+    const line = [];
+    let best = -Infinity;
+    sorted.forEach((p) => {
+      if (p.y <= best) return;
+      best = p.y;
+      const last = line[line.length - 1];
+      if (last && last.x === p.x) last.y = best;
+      else line.push({ x: p.x, y: best });
+    });
+
+    const latest = sorted[sorted.length - 1].x;
+    if (line[line.length - 1].x < latest) line.push({ x: latest, y: best });
+    return line;
+  }
+
+  // Month boundaries covering [minTs, maxTs], thinned so there are at most ~12 labels.
+  function monthTicks(minTs, maxTs) {
+    const start = new Date(minTs);
+    const months = [];
+    for (let m = start.getUTCMonth(); Date.UTC(start.getUTCFullYear(), m, 1) <= maxTs; m++) {
+      months.push(Date.UTC(start.getUTCFullYear(), m, 1));
+    }
+    const interval = [1, 2, 3, 6, 12].find((n) => months.length / n <= 12) || 12;
+    return months.filter((_, i) => i % interval === 0);
+  }
+
   function renderLeaderboardScatter(rows) {
-    const points = rows.map((row) => ({
-      x: row.score,
-      y: row.rank,
-      method: row.method,
-      model: row.model,
-      submission_date: row.submission_date,
-      logo: row.logo
-    }));
+    if (state.charts.leaderboardScatter) state.charts.leaderboardScatter.destroy();
+    state.charts.leaderboardScatter = null;
+
+    const points = rows
+      .filter((row) => isScore(row.score0) && row.submission_ts !== null)
+      .map((row) => ({
+        x: row.submission_ts,
+        y: row.score0,
+        rank: row.rank,
+        method: row.method,
+        model: row.model,
+        submission_date: row.submission_date,
+        logo: row.methodLogo || row.modelLogo
+      }));
+    if (!points.length) return;
+
     const xValues = points.map((p) => p.x);
     const yValues = points.map((p) => p.y);
-    const xMin = Math.min.apply(null, xValues);
-    const xMax = Math.max.apply(null, xValues);
+    const first = new Date(Math.min.apply(null, xValues));
+    const last = new Date(Math.max.apply(null, xValues));
+    const xMin = Date.UTC(first.getUTCFullYear(), first.getUTCMonth(), 1);
+    const xMax = Date.UTC(last.getUTCFullYear(), last.getUTCMonth() + 1, 1);
+    const ticks = monthTicks(xMin, xMax);
     const yMin = Math.min.apply(null, yValues);
     const yMax = Math.max.apply(null, yValues);
 
-    if (state.charts.leaderboardScatter) state.charts.leaderboardScatter.destroy();
     state.charts.leaderboardScatter = new Chart(document.getElementById("leaderboard-scatter-chart"), {
       type: "scatter",
       data: {
@@ -529,35 +659,54 @@
           pointHoverRadius: 0,
           pointHitRadius: 14,
           showLine: false
+        }, {
+          label: "Best so far",
+          data: bestSoFar(points),
+          showLine: true,
+          stepped: "before",
+          borderColor: "#b5b5b5",
+          borderWidth: 1.5,
+          borderDash: [4, 4],
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          pointHitRadius: 0
         }]
       },
-      plugins: [leaderboardLogoOverlayPlugin],
+      plugins: [leaderboardSpreadPlugin, leaderboardLogoOverlayPlugin],
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        // The spread plugin moves points after layout; animations would overwrite those positions.
+        animation: false,
         plugins: {
-          legend: { display: false },
+          legend: {
+            labels: { filter: (item) => item.datasetIndex === 1 }
+          },
           tooltip: {
+            filter: (item) => item.datasetIndex === 0,
             callbacks: {
               label: function (context) {
                 const raw = context.raw;
-                return `${raw.method} · ${raw.model} · Rank ${raw.y} · ${raw.submission_date} · ${raw.x.toFixed(1)}`;
+                return `${raw.method} · ${raw.model} · Rank ${raw.rank} · ${raw.submission_date} · ${raw.y.toFixed(1)}`;
               }
             }
           }
         },
         scales: {
           x: {
-            title: { display: true, text: "Execution Accuracy" },
-            min: xMin - 0.5,
-            max: xMax + 0.5
+            type: "linear",
+            title: { display: true, text: "Submission Date" },
+            min: xMin,
+            max: xMax,
+            afterBuildTicks: (axis) => {
+              axis.ticks = ticks.map((value) => ({ value }));
+            },
+            ticks: { callback: (value) => monthFormat.format(value) }
           },
           y: {
-            title: { display: true, text: "Rank" },
-            reverse: true,
-            min: yMin - 0.5,
-            max: yMax + 0.5,
-            ticks: { precision: 0 }
+            title: { display: true, text: "Execution Accuracy (Setting 0)" },
+            min: Math.floor(yMin - 1),
+            max: Math.ceil(yMax + 1)
           }
         }
       }
@@ -582,18 +731,30 @@
     const { key, direction } = state.sort;
     const order = direction === "asc" ? 1 : -1;
     filtered.sort((a, b) => {
-      if (key === "score" || key === "rank") return (a[key] - b[key]) * order;
-      return a[key].localeCompare(b[key]) * order;
+      const cmp = numericSortKeys.includes(key)
+        ? compareNullsLast(a[key], b[key], order)
+        : a[key].localeCompare(b[key]) * order;
+      return cmp || compareNullsLast(a.rank, b.rank, 1);
     });
 
+    const fmt = (v) => (isScore(v) ? v.toFixed(1) : "-");
     tbody.innerHTML = "";
     filtered.forEach((row) => {
       const tr = document.createElement("tr");
-      tr.innerHTML = `<td class="rank-cell"><div class="rank-number">${row.rank}</div></td><td><span class="date-pill">${row.submission_date}</span></td><td>${row.method}</td><td><span class="model-cell"><img class="model-logo" src="${row.logo}" alt="${row.model} logo" onerror="this.src='static/images/beaver.png'" /><span>${row.model}</span></span></td><td>${row.score.toFixed(1)}</td>`;
+      const methodLabel = row.methodLogo ? logoLabel(row.method, row.methodLogo) : row.method;
+      const methodCell = row.methodUrl ? `<a class="method-link" href="${row.methodUrl}">${methodLabel}</a>` : methodLabel;
+      tr.innerHTML = `<td class="rank-cell"><div class="rank-number">${row.rank ?? "-"}</div></td><td><span class="date-pill">${row.submission_date}</span></td><td>${methodCell}</td><td>${logoLabel(row.model, row.modelLogo)}</td><td>${fmt(row.score0)}</td><td>${fmt(row.score1)}</td><td>${fmt(row.score2)}</td>`;
       tbody.appendChild(tr);
     });
 
-    renderLeaderboardScatter(filtered);
+    // Methods flagged hideInScatter are left out of the scatter unless explicitly selected.
+    const hiddenMethods = methodValue === "ALL"
+      ? [...new Set(filtered.map((row) => row.method))].filter((method) => methodInfo[method]?.hideInScatter)
+      : [];
+    const scatterNote = document.getElementById("scatter-note");
+    scatterNote.classList.toggle("is-hidden", hiddenMethods.length === 0);
+    scatterNote.textContent = `Note: ${listFormat.format(hiddenMethods)} ${hiddenMethods.length === 1 ? "is" : "are"} shown in the table view only.`;
+    renderLeaderboardScatter(filtered.filter((row) => !hiddenMethods.includes(row.method)));
   }
 
   function bindLeaderboardEvents() {
@@ -609,7 +770,7 @@
           state.sort.direction = state.sort.direction === "asc" ? "desc" : "asc";
         } else {
           state.sort.key = key;
-          state.sort.direction = key === "score" ? "desc" : "asc";
+          state.sort.direction = scoreSortKeys.includes(key) ? "desc" : "asc";
         }
         renderLeaderboard();
       });
@@ -658,15 +819,7 @@
 
   function renderCategoryChart(categoryData) {
     const labels = categoryData.methods.map((m) => m.method);
-    const metrics = [
-      ["complex_queries", "Complex"],
-      ["domain_specific_queries", "Domain-Specific"],
-      ["domain_specific_complex_queries", "Domain+Complex"],
-      ["synthetic_overall", "Synthetic Overall"],
-      ["real_overall", "Real Overall"]
-    ];
-
-    const datasets = metrics.map((metric, idx) => ({
+    const datasets = categoryMetrics.map((metric, idx) => ({
       label: metric[1],
       data: categoryData.methods.map((m) => m[metric[0]]),
       backgroundColor: colors[idx % colors.length]
@@ -680,7 +833,23 @@
     });
   }
 
-  function renderSubtaskChart(subtaskRadarData) {
+  function renderSettingsList(settingsData) {
+    const list = document.getElementById("settings-list");
+    list.innerHTML = "";
+    settingsData.settings.forEach((setting) => {
+      const item = document.createElement("li");
+      const label = document.createElement("strong");
+      label.textContent = `${setting.label}:`;
+      item.appendChild(label);
+      item.appendChild(document.createTextNode(` ${setting.description}`));
+      list.appendChild(item);
+    });
+  }
+
+  function renderSubtaskChart(subtaskRadarData, settingsData) {
+    const settingDescriptions = Object.fromEntries(
+      settingsData.settings.map((setting) => [setting.id, setting.description])
+    );
     const settingSelect = document.getElementById("subtask-setting");
     const methodSelect = document.getElementById("subtask-method");
     const settingControl = document.getElementById("subtask-setting-control");
@@ -695,7 +864,7 @@
 
     subtaskRadarData.settings.forEach((setting) => {
       settingSelect.appendChild(
-        createOption(setting.id, `${setting.label}: ${setting.description}`)
+        createOption(setting.id, `${setting.label}: ${settingDescriptions[setting.id]}`)
       );
     });
     subtaskRadarData.settings[0].methods.forEach((methodEntry) => {
@@ -809,7 +978,7 @@
         datasets = subtaskRadarData.settings.map((setting, idx) => {
           const methodEntry = setting.methods.find((entry) => entry.method === selectedMethod);
           return {
-            label: `${setting.label}: ${setting.description}`,
+            label: `${setting.label}: ${settingDescriptions[setting.id]}`,
             data: axisKeys.map((key) => methodEntry.values[key]),
             borderColor: radarSettingColors[idx % radarSettingColors.length],
             backgroundColor: `${radarSettingColors[idx % radarSettingColors.length]}33`,
@@ -825,7 +994,7 @@
         legendItems = subtaskRadarData.settings.map((setting, idx) => ({
           key: setting.id,
           title: setting.label,
-          description: setting.description,
+          description: settingDescriptions[setting.id],
           color: radarSettingColors[idx % radarSettingColors.length],
           hidden: !!state.subtaskHidden.by_method[setting.id]
         }));
@@ -923,8 +1092,9 @@
 
   async function init() {
     try {
-      const [changelog, leaderboard, datasetStats, categoryPerformance, subtaskRadar, errorTaxonomy, exampleData] = await Promise.all([
+      const [changelog, settings, leaderboard, datasetStats, categoryPerformance, subtaskRadar, errorTaxonomy, exampleData] = await Promise.all([
         fetchJSON("static/jsons/changelog.json"),
+        fetchJSON("data/settings.json"),
         fetchJSON("data/leaderboard.json"),
         fetchJSON("data/dataset_stats.json"),
         fetchJSON("data/category_performance.json"),
@@ -937,6 +1107,7 @@
       fillChangelog(changelog);
       bindExampleBrowser(exampleData);
 
+      renderSettingsList(settings);
       state.leaderboardRows = toLeaderboardRows(leaderboard);
       await preloadAllLogos(state.leaderboardRows);
       setupLeaderboardFilters(state.leaderboardRows);
@@ -946,7 +1117,7 @@
 
       // renderDatasetChart(datasetStats);
       // renderCategoryChart(categoryPerformance);
-      renderSubtaskChart(subtaskRadar);
+      renderSubtaskChart(subtaskRadar, settings);
       // renderErrorCharts(errorTaxonomy);
     } catch (error) {
       console.error("Failed to load benchmark dashboard data:", error);

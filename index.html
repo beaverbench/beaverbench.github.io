@@ -292,6 +292,10 @@
                   </div>
                 </div>
                 <div id="leaderboard-table-view">
+                  <div class="notification is-light is-size-7" style="padding: 0.75rem 1rem; margin-bottom: 0.75rem;">
+                    <strong>Execution Accuracy settings:</strong>
+                    <ul id="settings-list" style="margin-top: 0.35rem; margin-left: 1.1rem; list-style: disc;"></ul>
+                  </div>
                   <div class="table-container">
                     <table class="table is-hoverable is-fullwidth is-size-7">
                       <thead>
@@ -300,7 +304,9 @@
                         <th>Submission Date</th>
                         <th class="sortable" data-sort-key="method">Method</th>
                         <th class="sortable" data-sort-key="model">Model</th>
-                        <th class="sortable" data-sort-key="score">Execution Accuracy</th>
+                        <th class="sortable" data-sort-key="score0">Execution Accuracy (Setting 0)</th>
+                        <th class="sortable" data-sort-key="score1">Execution Accuracy (Setting 1)</th>
+                        <th class="sortable" data-sort-key="score2">Execution Accuracy (Setting 2)</th>
                         </tr>
                       </thead>
                       <tbody id="leaderboard-body">
@@ -313,6 +319,7 @@
                   <div class="chart-box">
                     <canvas id="leaderboard-scatter-chart"></canvas>
                   </div>
+                  <p id="scatter-note" class="has-text-grey is-hidden" style="margin-top: 0.5rem; font-size: 0.68rem;"></p>
                 </div>
               </div>
               <div class="left-boxes">
@@ -338,24 +345,6 @@
                 <div id="subtask-legend" class="subtask-legend"></div>
                 <div class="chart-box">
                   <canvas id="subtask-chart"></canvas>
-                </div>
-              </div>
-              <div class="left-boxes">
-                <h2 class="title is-4">Citation</h2>
-                <p>
-                  If you find our data, code, or the paper helpful, please cite the
-                  paper:
-                </p>
-                <div class="code-container">
-                  <pre><code id="codeBlockLeaderboard">@article{chen2024beaver,
-  title={BEAVER: an enterprise benchmark for text-to-sql},
-  author={Chen, Peter Baile and Yang, Devin and Li, Weiyue and Wenz, Fabian and Zhang, Yi and Tatbul, Nesime and Cafarella, Michael and Demiralp, {\c{C}}a{\u{g}}atay and Stonebraker, Michael},
-  journal={arXiv preprint arXiv:2409.02038},
-  year={2024}
-}</code></pre>
-                  <button class="copy-btn" data-clipboard-target="#codeBlockLeaderboard">
-                    Copy
-                  </button>
                 </div>
               </div>
             </div>
@@ -463,25 +452,37 @@
                 <h2 class="title is-4">Changelog</h2>
                 <div class="container" id="changelog-body"></div>
               </div> -->
-              <div class="left-boxes">
-                <h2 class="title is-4">Citation</h2>
-                <p>
-                  If you find our data, code, or the paper helpful, please cite the
-                  paper:
-                </p>
-                <div class="code-container">
-                  <pre><code id="codeBlockOverview">article{chen2024beaver,
+            </div>
+            <!-- shared across overview and leaderboard views -->
+            <div class="left-boxes">
+              <h2 class="title is-4">Citation</h2>
+              <p>
+                If you find our data, code, or the paper helpful, please cite the
+                paper:
+              </p>
+              <div class="code-container">
+                <pre><code id="codeBlockCitation">@article{chen2024beaver,
   title={BEAVER: an enterprise benchmark for text-to-sql},
   author={Chen, Peter Baile and Yang, Devin and Li, Weiyue and Wenz, Fabian and Zhang, Yi and Tatbul, Nesime and Cafarella, Michael and Demiralp, {\c{C}}a{\u{g}}atay and Stonebraker, Michael},
   journal={arXiv preprint arXiv:2409.02038},
   year={2024}
 }</code></pre>
-                  <button class="copy-btn" data-clipboard-target="#codeBlockOverview">
-                    Copy
-                  </button>
-                </div>
+                <button class="copy-btn" data-clipboard-target="#codeBlockCitation">
+                  Copy
+                </button>
               </div>
             </div>
+            <!-- <div class="left-boxes">
+              <h2 class="title is-4">Acknowledgement</h2>
+              <p>
+                We thank <a href="https://schemantic.io/">Schemantic</a> for their support in developing this benchmark.
+              </p>
+              <div class="has-text-centered" style="margin-top: 15px;">
+                <a href="https://schemantic.io/">
+                  <img src="static/images/schemantic-logo.png" alt="Schemantic" style="max-height: 50px; width: auto;" />
+                </a>
+              </div>
+            </div> -->
           </div>
         </div>
       </div>
@@ -709,6 +710,12 @@
       vertical-align: middle;
     }
 
+    #leaderboard-table-view .table th:nth-child(3),
+    #leaderboard-table-view .table td:nth-child(3) {
+      /* Wide enough that hyphenated names stay on one line; longer names wrap at spaces. */
+      min-width: 130px;
+    }
+
     .rank-cell {
       text-align: center;
       min-width: 92px;
@@ -730,20 +737,32 @@
       padding: 4px 10px;
       font-size: inherit;
       font-weight: 600;
+      white-space: nowrap;
     }
 
-    .model-cell {
+    .logo-label {
       display: inline-flex;
       align-items: center;
       gap: 8px;
     }
 
-    .model-logo {
+    .logo-label img {
       width: 16px;
       height: 16px;
       object-fit: contain;
       border-radius: 3px;
       background: #fff;
+    }
+
+    .method-link {
+      color: inherit;
+    }
+
+    /* Underlines don't reach into inline-flex children, so target the label text directly. */
+    .method-link:hover,
+    .method-link:hover .logo-label > span {
+      color: inherit;
+      text-decoration: underline;
     }
 
     .chart-box {
@@ -1077,11 +1096,11 @@
         font-size: 0.68rem;
       }
 
-      .model-cell {
+      .logo-label {
         gap: 4px;
       }
 
-      .model-logo {
+      .logo-label img {
         width: 12px;
         height: 12px;
       }
